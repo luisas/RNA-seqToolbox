@@ -1,24 +1,27 @@
 package exonSkipping;
 
-import java.util.List;
-
-public class Gene {
+public class Exon {
 	
+	private int number; 
 	private String id; 
 	private String name; 
 	private int start; 
 	private int stop; 
-	private List<Transcript> transcripts; 
+	private String geneId; 
 	private String biotype; 
 	private String source; 
 	private String strand; 
+	private String transcriptId;
+
 	
-	public Gene(String id, String name, int start, int stop, List<Transcript> transcripts, String biotype, String source, String strand) {
-		this.id= id;
+	public Exon(int number,String id,  String name, int start, int stop, String geneId, String TranscriptId, String biotype, String source, String strand) {
+		this.number= number;
+		this.id= id; 
 		this.name=name; 
 		this.stop= stop; 
 		this.start=start; 
-		this.transcripts=transcripts;
+		this.geneId= geneId;
+		this.transcriptId= transcriptId;
 		this.source=source; 
 		this.biotype=biotype;
 		this.strand=strand; 
@@ -31,6 +34,14 @@ public class Gene {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public int getNumber() {
+		return number;
+	}
+
+	public void setNumber(int number) {
+		this.number = number;
 	}
 
 	public String getName() {
@@ -57,12 +68,12 @@ public class Gene {
 		this.stop = stop;
 	}
 
-	public List<Transcript> getTranscripts() {
-		return transcripts;
+	public String getGeneId() {
+		return geneId;
 	}
 
-	public void setTranscripts(List<Transcript> transcripts) {
-		this.transcripts = transcripts;
+	public void setGeneId(String geneId) {
+		this.geneId = geneId;
 	}
 
 	public String getBiotype() {
@@ -88,7 +99,14 @@ public class Gene {
 	public void setStrand(String strand) {
 		this.strand = strand;
 	}
-	
+
+	public String getTranscriptId() {
+		return transcriptId;
+	}
+
+	public void setTranscriptId(String transcriptId) {
+		this.transcriptId = transcriptId;
+	}
 	
 	
 	

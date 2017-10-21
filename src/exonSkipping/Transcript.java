@@ -2,23 +2,23 @@ package exonSkipping;
 
 import java.util.List;
 
-public class Gene {
-	
+public class Transcript {
+
 	private String id; 
 	private String name; 
 	private int start; 
 	private int stop; 
-	private List<Transcript> transcripts; 
+	private String geneId; 
 	private String biotype; 
 	private String source; 
 	private String strand; 
 	
-	public Gene(String id, String name, int start, int stop, List<Transcript> transcripts, String biotype, String source, String strand) {
+	public Transcript(String id, String name, int start, int stop, String geneId, String biotype, String source, String strand) {
 		this.id= id;
 		this.name=name; 
 		this.stop= stop; 
 		this.start=start; 
-		this.transcripts=transcripts;
+		this.geneId= geneId;
 		this.source=source; 
 		this.biotype=biotype;
 		this.strand=strand; 
@@ -57,12 +57,12 @@ public class Gene {
 		this.stop = stop;
 	}
 
-	public List<Transcript> getTranscripts() {
-		return transcripts;
+	public String getGeneId() {
+		return geneId;
 	}
 
-	public void setTranscripts(List<Transcript> transcripts) {
-		this.transcripts = transcripts;
+	public void setGeneId(String geneId) {
+		this.geneId = geneId;
 	}
 
 	public String getBiotype() {
@@ -92,5 +92,4 @@ public class Gene {
 	
 	
 	
-
 }
