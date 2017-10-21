@@ -13,7 +13,7 @@ public class Gene {
 	private String source; 
 	private String strand; 
 	
-	public Gene(String id, String name, int start, int stop, List<Transcript> transcripts, String biotype, String source, String strand) {
+	public Gene(String id, String name, int start, int stop, String biotype, String source, String strand) {
 		this.id= id;
 		this.name=name; 
 		this.stop= stop; 
