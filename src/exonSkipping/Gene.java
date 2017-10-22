@@ -8,7 +8,6 @@ public class Gene {
 	private String name; 
 	private int start; 
 	private int stop; 
-	private List<Transcript> transcripts; 
 	private String biotype; 
 	private String source; 
 	private String strand; 
@@ -18,7 +17,6 @@ public class Gene {
 		this.name=name; 
 		this.stop= stop; 
 		this.start=start; 
-		this.transcripts=transcripts;
 		this.source=source; 
 		this.biotype=biotype;
 		this.strand=strand; 
@@ -57,13 +55,6 @@ public class Gene {
 		this.stop = stop;
 	}
 
-	public List<Transcript> getTranscripts() {
-		return transcripts;
-	}
-
-	public void setTranscripts(List<Transcript> transcripts) {
-		this.transcripts = transcripts;
-	}
 
 	public String getBiotype() {
 		return biotype;

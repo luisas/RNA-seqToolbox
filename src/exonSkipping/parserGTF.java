@@ -3,21 +3,26 @@ package exonSkipping;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
 public class parserGTF {
 	
+
 	
 	public static void parse(String filename) {
+		
 		
 		//Initialize array ans hashmap
 		String tokenizedRow[] = new String[8];
 		HashMap<String, String> attributes= new HashMap();
 		HashMap<String, Gene> genes = new HashMap();
 		HashMap<String, Transcript> transcripts = new HashMap();
-		HashMap<String, Exon> exons = new HashMap();
+		HashMap<String, RegionVector> regionvectors= new HashMap();
+	
+		
+
 		
 		//Read the GTF file line by line
 		try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
@@ -25,7 +30,7 @@ public class parserGTF {
 			String currentLine;
 			Gene gene;
 			Transcript transcript;
-			Exon exon;
+			RegionVector rv;
 
 		//Each line is tokenized 
 			while ((currentLine = br.readLine()) != null ) {
@@ -68,17 +73,27 @@ public class parserGTF {
 			        		transcripts.put(transcript.getId(), transcript);
 			        	
 			        }
-			        else if(tokenizedRow[2].equals("transcript")) {
-			        		//exon=new Exon();
-			        		//exons.put(exon.getId(), exon);
-			        	
+			        else if(tokenizedRow[2].equals("exon")) {
+			        		 rv = new RegionVector(attributes.get("exon_id"), attributes.get("exon_name"), Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]), tokenizedRow[6], attributes.get("gene_id"), attributes.get("gene_biotype"), tokenizedRow[1]);
+			        		 regionvectors.put(rv.getId(), rv);
 			        }
+			        else if(tokenizedRow[2].equals("cds")) {
+			        	//ERROR
+		        		 rv = new RegionVector(attributes.get("protein_id"), attributes.get("gene_name"), Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]), tokenizedRow[6], attributes.get("gene_id"), attributes.get("gene_biotype"), tokenizedRow[1]);
+		        		 regionvectors.put(rv.getId(), rv);
+		        }
 			        
 			        
 			        
 			        
 				}
 			}
+			
+			System.out.println("Done");
+	
+			Runner.annotation.setGenes(genes);
+			Runner.annotation.setTranscripts(transcripts);
+			
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -86,15 +101,6 @@ public class parserGTF {
 		
 	}
 	
-	public static void main(String[] args) {
-		
-		//TEST
-		//String myFileName = "/Users/luisasantus/Desktop/GoBi/data/Drosophila_melanogaster.BDGP5.77.gtf";
-		String myFileName = "/Users/luisasantus/Desktop/GoBi/data/small.gtf";
-
-		parse(myFileName);
-		
-	}
 	
 	
 

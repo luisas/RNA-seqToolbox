@@ -62,6 +62,32 @@
 
 }
 
+.box{
+
+  height: 180px;
+
+  margin: 20px;
+  border-style: solid;
+border-width: 2px;
+border-color: #808080;
+}
+
+#method{
+  color: black;
+  font-style: italic;
+margin: 50px;
+padding: 50px;
+  border: 20px;
+}
+
+
+.row{
+  border-style: solid;
+border-width: 2px;
+border-color: #808080;
+}
+
+
 body{
 
   background: white;
