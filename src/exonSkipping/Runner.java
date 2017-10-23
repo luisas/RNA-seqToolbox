@@ -3,6 +3,7 @@ package exonSkipping;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -30,10 +31,12 @@ public class Runner {
 			e.printStackTrace();
 		}
 		
-		String myFileName = "/Users/luisasantus/Desktop/GoBi/data/Drosophila_melanogaster.BDGP5.77.gtf";
-		//String myFileName = "/Users/luisasantus/Desktop/GoBi/data/small.gtf";
+		//String myFileName = "/Users/luisasantus/Desktop/GoBi/data/Drosophila_melanogaster.BDGP5.77.gtf";
+		String myFileName = "/Users/luisasantus/Desktop/GoBi/data/small.gtf";
+		//String myFileName = "/Users/luisasantus/Desktop/GoBi/data/test.gtf";
+
 		parserGTF.parse(myFileName);
-		//parser.parse(commandLine.getOptionValue("gtf"));
+		//parserGTF.parse(commandLine.getOptionValue("gtf"));
 		
 		try {
 			// Tab delimited file will be written to data with the name tab-file.csv
@@ -43,22 +46,57 @@ public class Runner {
 			FileWriter fos = new FileWriter(outputfile);
 			PrintWriter dos = new PrintWriter(fos);
 			//dos.println("Heading1\tHeading2\tHeading3\t");
-			// loop through all your data and print it to the file
 			
 			
 			Iterator it = annotation.getGenes().entrySet().iterator();
 		    while (it.hasNext()) {
 		        Map.Entry pair = (Map.Entry)it.next();
+				Gene myGene= annotation.getGeneById(pair.getKey().toString());
+				
+		        //ID
 				dos.print(pair.getKey().toString() +"\t");
-
-				System.out.println(pair.getValue());
+				//NAME
+				dos.print(myGene.getName()+"\t");
+				//CHR
+				dos.print(myGene.getChr()+"\t");
+				//STRAND
+				dos.print(myGene.getStrand()+"\t");
+				//nprots (number of annotated CDS in the gene)
+				dos.print(annotation.getNumberOfCds(myGene, annotation.getCds()) + "\t");
+				//ntrans (number of annotated transcripts in the gene)
+				dos.print(annotation.getNumberTranscripts(myGene));
+				
+				//SV (the SV intron as start:end)
+				
+				//WT (the WT introns within the SV intron separated by | as start:end)
+				
+				//SV prots (ids of the SV CDS-s, separated by |)
+				
+				//WT prots (ids of the WT CDS-s, separated by |)
+				
+				//min skipped exon the minimal number of skipped exons in any WT/SV pair
+				
+				//max skipped exon the maximum number of skipped exons in any WT/SV pair
+				
+				//min skipped bases the minimal number of skipped bases (joint length of skipped exons) in any WT/SV pair
+				
+				//max skipped bases the maximum number of skipped bases (joint length of skipped exons) in any WT/SV pair
+				
+				
+				
+						
+				
+				
 		        it.remove(); // avoids a ConcurrentModificationException
 				dos.println();
 		    }
 			
 
 
-			
+		
+				   
+				   
+				  
 			
 			dos.close();
 			fos.close();

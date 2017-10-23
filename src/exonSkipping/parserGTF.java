@@ -3,7 +3,7 @@ package exonSkipping;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
@@ -19,7 +19,8 @@ public class parserGTF {
 		HashMap<String, String> attributes= new HashMap();
 		HashMap<String, Gene> genes = new HashMap();
 		HashMap<String, Transcript> transcripts = new HashMap();
-		HashMap<String, RegionVector> regionvectors= new HashMap();
+		HashMap<String, RegionVector> exons= new HashMap();
+		HashMap<String, RegionVector> cdss= new HashMap();
 	
 		
 
@@ -28,9 +29,10 @@ public class parserGTF {
 		try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
 
 			String currentLine;
-			Gene gene;
+			Gene gene= new Gene();
 			Transcript transcript;
-			RegionVector rv;
+			RegionVector exon;
+			RegionVector cds;
 
 		//Each line is tokenized 
 			while ((currentLine = br.readLine()) != null ) {
@@ -50,7 +52,7 @@ public class parserGTF {
 			        		}
 			        		else {
 			        			
-			        			attributes.put(defaultTokenizer.nextToken(), defaultTokenizer.nextToken());
+			        			attributes.put(defaultTokenizer.nextToken(), defaultTokenizer.nextToken().replaceAll("[\";]",""));
 			        		}			        		
 
 			        }
@@ -63,7 +65,8 @@ public class parserGTF {
 			        //Create and save the corresponding object
 			        if(tokenizedRow[2].equals("gene")) {
 				       
-				        	 gene = new Gene(attributes.get("gene_id"), attributes.get("gene_name"), Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),  attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6]);
+			        		 ArrayList<String> transcriptIds= new ArrayList();
+				        	 gene = new Gene(attributes.get("gene_id"), attributes.get("gene_name"),tokenizedRow[0], Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),  attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6], transcriptIds);
 				        	 genes.put(gene.getId(), gene);
 				        	 
 			        }
@@ -71,16 +74,17 @@ public class parserGTF {
 			        	
 			        		transcript= new Transcript(attributes.get("transcript_id"), attributes.get("transcript_name"), Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),attributes.get("gene_id"), attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6]);
 			        		transcripts.put(transcript.getId(), transcript);
+			        		
 			        	
 			        }
 			        else if(tokenizedRow[2].equals("exon")) {
-			        		 rv = new RegionVector(attributes.get("exon_id"), attributes.get("exon_name"), Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]), tokenizedRow[6], attributes.get("gene_id"), attributes.get("gene_biotype"), tokenizedRow[1]);
-			        		 regionvectors.put(rv.getId(), rv);
+			        		 exon = new RegionVector(attributes.get("exon_id"), attributes.get("exon_name"), Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]), tokenizedRow[6], attributes.get("gene_id"), attributes.get("gene_biotype"), tokenizedRow[1]);
+			        		 exons.put(exon.getId(), exon);
 			        }
-			        else if(tokenizedRow[2].equals("cds")) {
+			        else if(tokenizedRow[2].equals("CDS")) {
 			        	//ERROR
-		        		 rv = new RegionVector(attributes.get("protein_id"), attributes.get("gene_name"), Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]), tokenizedRow[6], attributes.get("gene_id"), attributes.get("gene_biotype"), tokenizedRow[1]);
-		        		 regionvectors.put(rv.getId(), rv);
+		        		 cds = new RegionVector(attributes.get("protein_id"), attributes.get("gene_name"), Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]), tokenizedRow[6], attributes.get("gene_id"), attributes.get("gene_biotype"), tokenizedRow[1]);
+		        		 cdss.put(cds.getId(), cds);
 		        }
 			        
 			        
@@ -89,10 +93,25 @@ public class parserGTF {
 				}
 			}
 			
-			System.out.println("Done");
+			
+			//Fill the list of transcript for the genes.
+			
+			for (String key : transcripts.keySet()) {
+				
+			    String geneId= transcripts.get(key).getGeneId();
+			    Gene.addTranscriptId(key,genes.get(geneId));
+			    
+			}
+			
 	
 			Runner.annotation.setGenes(genes);
 			Runner.annotation.setTranscripts(transcripts);
+			Runner.annotation.setExons(exons);
+			Runner.annotation.setCds(cdss);
+			
+			System.out.println("Done");
+			
+			//Utilities.printGenes(genes);
 			
 
 		} catch (IOException e) {

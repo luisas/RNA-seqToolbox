@@ -7,7 +7,8 @@ public class RegionVector {
 	private int start; 
 	private int stop;
 	private String strand; 
-	private String geneId; 
+	private String geneId;
+	
 	private String biotype; 
 	private String source; 
 	

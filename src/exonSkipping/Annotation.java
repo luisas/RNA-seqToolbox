@@ -7,13 +7,14 @@ public class Annotation {
 	
 	private HashMap<String,Gene > genes;
 	private HashMap<String, Transcript> transcripts;
-	private HashMap<String, RegionVector> regionvectors; 
+	private HashMap<String, RegionVector> exons;
+	private HashMap<String, RegionVector> cds;
 	
 	
 	//Looks for a gene by its ID
 	Gene getGeneById(String id) {
 		
-		return null;
+		return genes.get(id);
 	}
 	
 	//Define if a gene has a CDS
@@ -24,8 +25,53 @@ public class Annotation {
 	
 	Iterator<Gene> getGenes(String chr, int start, int end){
 
+		
 		return null;
 	}
+	
+	
+	
+	int getNumberTranscripts(Gene gene) {
+		
+		return gene.getTranscriptIds().size();
+		
+
+	}
+	
+	
+	int getNumberOfCds(Gene gene, HashMap<String, RegionVector> cdss) {
+		
+		
+		int number=0; 
+
+		
+		for (String key : cdss.keySet()) {
+			String cdsGeneId =cdss.get(key).getGeneId();
+
+			
+			
+
+			if(cdsGeneId.equals(gene.getId())) {
+				number++;
+			}
+			//System.out.println(cdsGeneId);
+			//System.out.println(gene.getId());
+			//System.out.println(number);
+
+		}
+		
+		
+
+		
+		
+		
+		return number;
+		
+	}
+	
+	
+	
+	
 
 	public HashMap<String, Gene> getGenes() {
 		return genes;
@@ -36,12 +82,22 @@ public class Annotation {
 	}
 
 
-	public HashMap<String, RegionVector> getRegionvectors() {
-		return regionvectors;
+
+
+	public HashMap<String, RegionVector> getExons() {
+		return exons;
 	}
 
-	public void setRegionvectors(HashMap<String, RegionVector> regionvectors) {
-		this.regionvectors = regionvectors;
+	public void setExons(HashMap<String, RegionVector> exons) {
+		this.exons = exons;
+	}
+
+	public HashMap<String, RegionVector> getCds() {
+		return cds;
+	}
+
+	public void setCds(HashMap<String, RegionVector> cds) {
+		this.cds = cds;
 	}
 
 	public HashMap<String, Transcript> getTranscripts() {
