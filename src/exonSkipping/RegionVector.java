@@ -1,95 +1,96 @@
 package exonSkipping;
 
+import java.util.Vector;
+
 public class RegionVector {
-	
-	private String id; 
-	private String name; 
-	private int start; 
-	private int stop;
-	private String strand; 
+
 	private String geneId;
-	
-	private String biotype; 
-	private String source; 
-	
-	public RegionVector(String id, String name, int start, int stop, String strand, String geneId, String biotype,
-			String source) {
+	private Vector<Region> vector;
+
+
+
+
+
+
+	public RegionVector() {
 		super();
-		this.id = id;
-		this.name = name;
-		this.start = start;
-		this.stop = stop;
-		this.strand = strand;
+		// TODO Auto-generated constructor stub
+	}
+
+
+
+
+
+	public RegionVector(String geneId, Vector<Region> vector) {
+		super();
 		this.geneId = geneId;
-		this.biotype = biotype;
-		this.source = source;
+		this.vector = vector;
+
 	}
 
-	public String getId() {
-		return id;
+
+
+
+
+	public Vector<Region> inverse(){
+
+		Vector<Region> reverse = new Vector<Region>();
+		int x1 = Runner.annotation.getGeneById(this.geneId).getStart();
+		int x3= Runner.annotation.getGeneById(this.geneId).getStart();
+		Region intron;
+
+		//angenommen die sind sortiert
+		for (Region r : vector) {
+
+			//nop exon at beginning
+			int x2 = r.getStart();
+
+			if(x2>x1){
+				intron = new Region(x1,x2);
+				x1= r.getEnd();
+				reverse.add(intron);
+			}else{
+
+				x1= r.getEnd();
+			}
+			//exon at beginning
+
+
+
+		}
+
+		intron = new Region(x1,x3);
+		reverse.add(intron);
+
+
+
+		return null;
 	}
 
-	public void setId(String id) {
-		this.id = id;
-	}
 
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public int getStart() {
-		return start;
-	}
-
-	public void setStart(int start) {
-		this.start = start;
-	}
-
-	public int getStop() {
-		return stop;
-	}
-
-	public void setStop(int stop) {
-		this.stop = stop;
-	}
-
-	public String getStrand() {
-		return strand;
-	}
-
-	public void setStrand(String strand) {
-		this.strand = strand;
-	}
 
 	public String getGeneId() {
 		return geneId;
 	}
 
+
 	public void setGeneId(String geneId) {
 		this.geneId = geneId;
 	}
 
-	public String getBiotype() {
-		return biotype;
+
+	public Vector<Region> getVector() {
+		return vector;
 	}
 
-	public void setBiotype(String biotype) {
-		this.biotype = biotype;
+
+	public void setVector(Vector<Region> vector) {
+		this.vector = vector;
 	}
 
-	public String getSource() {
-		return source;
-	}
 
-	public void setSource(String source) {
-		this.source = source;
-	}
-	
-	
-	
+
+
+
 
 }

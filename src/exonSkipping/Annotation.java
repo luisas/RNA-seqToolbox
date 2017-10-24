@@ -4,74 +4,58 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 public class Annotation {
-	
+
 	private HashMap<String,Gene > genes;
 	private HashMap<String, Transcript> transcripts;
 	private HashMap<String, RegionVector> exons;
 	private HashMap<String, RegionVector> cds;
-	
-	
+
+
 	//Looks for a gene by its ID
 	Gene getGeneById(String id) {
-		
+
 		return genes.get(id);
 	}
-	
+
 	//Define if a gene has a CDS
 	//Pair<Gene, RegionVector> getRegionVector(String id, boolean cds){
-		
-		
+
+
 	//}
-	
+
 	Iterator<Gene> getGenes(String chr, int start, int end){
 
-		
+
 		return null;
 	}
-	
-	
-	
+
+
+
 	int getNumberTranscripts(Gene gene) {
-		
+
 		return gene.getTranscriptIds().size();
-		
+
 
 	}
-	
-	
-	int getNumberOfCds(Gene gene, HashMap<String, RegionVector> cdss) {
-		
-		
-		int number=0; 
 
-		
-		for (String key : cdss.keySet()) {
-			String cdsGeneId =cdss.get(key).getGeneId();
 
-			
-			
+	int getNumberOfCds(Gene gene) {
 
-			if(cdsGeneId.equals(gene.getId())) {
-				number++;
-			}
-			//System.out.println(cdsGeneId);
-			//System.out.println(gene.getId());
-			//System.out.println(number);
 
-		}
-		
-		
+		int number= gene.getCds().size();
 
-		
-		
-		
+
+
+
+
+
 		return number;
-		
+
 	}
-	
-	
-	
-	
+
+
+
+
 
 	public HashMap<String, Gene> getGenes() {
 		return genes;
@@ -107,8 +91,8 @@ public class Annotation {
 	public void setTranscripts(HashMap<String, Transcript> transcripts) {
 		this.transcripts = transcripts;
 	}
-	
-	
-	
+
+
+
 
 }

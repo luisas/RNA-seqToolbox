@@ -1,20 +1,24 @@
 package exonSkipping;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Vector;
 
 public class Gene {
-	
-	private String id; 
+
+	private String id;
 	private String name;
-	private String chr; 
-	private int start; 
-	private int stop; 
-	private String biotype; 
-	private String source; 
-	private String strand; 
+	private String chr;
+	private int start;
+	private int stop;
+	private String biotype;
+	private String source;
+	private String strand;
 	private ArrayList<String> transcriptIds;
-	
-	
+	private Vector<Region> cds;
+	private Vector<Region> exon;
+
+
 	public Gene() {
 		super();
 	}
@@ -24,20 +28,64 @@ public class Gene {
 		this.id= id;
 		this.name=name;
 		this.chr=chr;
-		this.stop= stop; 
-		this.start=start; 
-		this.source=source; 
+		this.stop= stop;
+		this.start=start;
+		this.source=source;
 		this.biotype=biotype;
-		this.strand=strand; 
+		this.strand=strand;
 		this.transcriptIds=transcriptIds;
-		
+
 	}
 
-	
+
+
+
+
+
+	public Gene(String id, String name, String chr, int start, int stop,
+			String biotype, String source, String strand,
+			ArrayList<String> transcriptIds, Vector<Region> cds,
+			Vector<Region> exon) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.chr = chr;
+		this.start = start;
+		this.stop = stop;
+		this.biotype = biotype;
+		this.source = source;
+		this.strand = strand;
+		this.transcriptIds = transcriptIds;
+		this.cds = cds;
+		this.exon = exon;
+	}
+
+
+
+	public Vector<Region> getCds() {
+		return cds;
+	}
+
+
+	public void setCds(Vector<Region> cds) {
+		this.cds = cds;
+	}
+
+
+	public Vector<Region> getExon() {
+		return exon;
+	}
+
+
+	public void setExon(Vector<Region> exon) {
+		this.exon = exon;
+	}
+
+
 	public static void addTranscriptId(String transcriptId, Gene gene) {
-		
+
 		gene.transcriptIds.add(transcriptId);
-		
+
 	}
 	public String getId() {
 		return id;
@@ -111,9 +159,9 @@ public class Gene {
 	public void setChr(String chr) {
 		this.chr = chr;
 	}
-	
-	
-	
-	
+
+
+
+
 
 }
