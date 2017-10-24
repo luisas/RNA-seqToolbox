@@ -168,6 +168,7 @@ public class parserGTF {
 			}
 
 
+
 			Runner.annotation.setGenes(genes);
 			Runner.annotation.setTranscripts(transcripts);
 			Runner.annotation.setExons(exons);

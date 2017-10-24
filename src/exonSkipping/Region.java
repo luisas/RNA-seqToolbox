@@ -11,6 +11,11 @@ public class Region {
 		this.end = end;
 	}
 
+	public int getLength(){
+
+		return (this.end-this.start);
+	}
+
 	public int getStart() {
 		return start;
 	}

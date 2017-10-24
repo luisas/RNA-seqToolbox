@@ -1,5 +1,7 @@
 package exonSkipping;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Vector;
 
 public class RegionVector {
@@ -29,6 +31,14 @@ public class RegionVector {
 	}
 
 
+	Comparator<Region> comparator = new Comparator<Region>() {
+	    @Override
+	    public int compare(Region left, Region right) {
+	        return left.getStart() - right.getStart(); // use your logic
+	    }
+	};
+
+	 // use the comparator as much as u want
 
 
 
@@ -38,9 +48,11 @@ public class RegionVector {
 		int x1 = Runner.annotation.getGeneById(this.geneId).getStart();
 		int x3= Runner.annotation.getGeneById(this.geneId).getStart();
 		Region intron;
-
+		Collections.sort(vector, comparator);
+		//System.out.println(Collections.singletonList(this.vector));
+		Utilities.printVector(vector);
 		//angenommen die sind sortiert
-		for (Region r : vector) {
+		for (Region r : this.vector) {
 
 			//nop exon at beginning
 			int x2 = r.getStart();
@@ -61,6 +73,14 @@ public class RegionVector {
 
 		intron = new Region(x1,x3);
 		reverse.add(intron);
+
+
+
+		return reverse;
+	}
+
+
+	public RegionVector substract(RegionVector first, RegionVector second){
 
 
 

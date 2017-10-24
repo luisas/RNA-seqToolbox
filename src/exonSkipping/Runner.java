@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Vector;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -54,6 +55,10 @@ public class Runner {
 		    while (it.hasNext()) {
 		        Map.Entry pair = (Map.Entry)it.next();
 				Gene myGene= annotation.getGeneById(pair.getKey().toString());
+				RegionVector rv = new RegionVector(myGene.getId(),myGene.getExon() );
+				Vector<Region> introns= rv.inverse();
+
+				for(Region r: introns ){
 
 		        //ID
 				dos.print(pair.getKey().toString() +"\t");
@@ -66,9 +71,17 @@ public class Runner {
 				//nprots (number of annotated CDS in the gene)
 				dos.print(annotation.getNumberOfCds(myGene)+ "\t");
 				//ntrans (number of annotated transcripts in the gene)
-				dos.print(annotation.getNumberTranscripts(myGene));
+				dos.print(annotation.getNumberTranscripts(myGene)+ "\t");
 
 				//SV (the SV intron as start:end)
+				dos.print(r.getStart()+":"+r.getEnd()+ "\t");
+				//System.out.println(Collections.singletonList(introns));
+
+				//Utilities.printVector(myGene.getExon());
+				dos.println();
+
+				}
+
 
 				//WT (the WT introns within the SV intron separated by | as start:end)
 
@@ -90,7 +103,7 @@ public class Runner {
 
 
 		        it.remove(); // avoids a ConcurrentModificationException
-				dos.println();
+
 		    }
 
 

@@ -11,6 +11,7 @@ public class Annotation {
 	private HashMap<String, RegionVector> cds;
 
 
+
 	//Looks for a gene by its ID
 	Gene getGeneById(String id) {
 
@@ -91,6 +92,7 @@ public class Annotation {
 	public void setTranscripts(HashMap<String, Transcript> transcripts) {
 		this.transcripts = transcripts;
 	}
+
 
 
 
