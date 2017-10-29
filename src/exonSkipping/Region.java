@@ -11,6 +11,25 @@ public class Region {
 		this.end = end;
 	}
 
+	@Override
+	public int hashCode() {
+		// TODO Auto-generated method stub
+		return super.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		// TODO Auto-generated method stub
+		Region r = (Region) obj;
+		
+		if(this.start ==  r.start && this.end == r.end) {
+			return true; 
+		}else {
+			return false; 
+		}
+	
+	}
+
 	public int getLength(){
 
 		return (this.end-this.start);

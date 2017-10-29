@@ -16,6 +16,9 @@ public class Utilities {
 		System.out.println(gene.getId() +"\t"+ gene.getName() +"\t"+gene.getStart()+ "\t"+gene.getStop());
 		System.out.print( "\t" +"\t List of Transcripts");
 		System.out.println(Collections.singletonList(gene.getTranscriptIds()));
+		System.out.print( "\t" +"\t List of CDS");
+		printVector(gene.getCds());
+		
 
 	}
 
@@ -38,6 +41,31 @@ public class Utilities {
 
 		}
 
+	}
+	
+	public static void printRegionVector(RegionVector rv) {
+		
+		
+		for(Region r : rv.getVector()) {
+			
+			
+			System.out.println(r.getStart()+":"+r.getEnd()+"----"+r.getLength());
+
+		}
+		
+	}
+	
+	
+	public static void printCds(HashMap<String, RegionVector> map) {
+		
+		for(String key : map.keySet()) {
+			printVector(map.get(key).getVector());
+			
+			System.out.println("hola");
+			
+		}
+		
+		
 	}
 
 

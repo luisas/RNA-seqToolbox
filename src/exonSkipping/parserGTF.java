@@ -11,6 +11,11 @@ import java.util.Vector;
 public class parserGTF {
 
 
+	public static void updateStartStop(String geneId) {
+		
+		
+		
+	}
 
 	public static void parse(String filename) {
 
@@ -19,7 +24,7 @@ public class parserGTF {
 		String tokenizedRow[] = new String[8];
 		HashMap<String, String> attributes= new HashMap();
 		HashMap<String, Gene> genes = new HashMap();
-		HashMap<String, Transcript> transcripts = new HashMap();
+		HashMap<String, RegionVector> transcripts = new HashMap();
 		HashMap<String, RegionVector> exons= new HashMap();
 		HashMap<String, RegionVector> cdss= new HashMap();
 
@@ -31,7 +36,7 @@ public class parserGTF {
 
 			String currentLine;
 			Gene gene= new Gene();
-			Transcript transcript;
+			RegionVector transcript;
 			Region e;
 			Region c;
 			RegionVector exon = new RegionVector();
@@ -78,9 +83,36 @@ public class parserGTF {
 			        }
 			        else if(tokenizedRow[2].equals("transcript")) {
 
-			        		transcript= new Transcript(attributes.get("transcript_id"), attributes.get("transcript_name"), Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),attributes.get("gene_id"), attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6]);
-			        		transcripts.put(transcript.getId(), transcript);
-
+			        		//transcript= new Transcript(attributes.get("transcript_id"), attributes.get("transcript_name"), Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),attributes.get("gene_id"), attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6]);
+			        		//transcripts.put(transcript.getId(), transcript);
+			        		
+			        		//Save the id in the gene list
+			        		if(genes.containsKey(attributes.get("gene_id"))){
+			        			genes.get(attributes.get("geneId")).getTranscriptIds().add(attributes.get("transcript_id"));
+			        		}else {
+			        			 ArrayList<String> transcriptIds= new ArrayList();
+				        		 Vector<Region> rv1= new Vector();
+				        		 Vector<Region> rv2= new Vector();
+			        			 Gene newGene = new Gene(attributes.get("gene_id"), attributes.get("gene_name"),tokenizedRow[0], Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),  attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6], transcriptIds, rv1, rv2);
+				        		 genes.put(attributes.get("gene_id"), newGene);
+			        		}
+			        		
+			        		
+			        		Region r = new Region(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
+			        		//Save the real element
+			        		if(transcripts.containsKey(attributes.get("transcript_id"))) {
+			        			transcripts.get(attributes.get("transcript_id")).getVector().add(r);
+			        		}else {
+			        			Vector<Region> rv1= new Vector();
+			        			rv1.add(r);
+				        		transcript= new RegionVector(attributes.get("transcript_id"),attributes.get("gene_id"),rv1);
+			        			transcripts.put(attributes.get("transcript_id"), transcript);
+			        		}
+			        		
+			        		
+			        		
+			        		
+			        	
 
 			        }
 			        else if(tokenizedRow[2].equals("exon")) {
@@ -88,16 +120,35 @@ public class parserGTF {
 			        		 //exons.put(exon.getId(), exon);
 			        	 e = new Region(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
 
-			        	 if(exons.containsKey(attributes.get("gene_id"))){
+			        	 if(genes.containsKey(attributes.get("gene_id"))){
 
-			        		 exons.get(attributes.get("gene_id")).getVector().add(e);
+			        		 //exons.get(attributes.get("gene_id")).getVector().add(e);
+			        		 genes.get(attributes.get("gene_id")).getExon().add(e);
+				        	 //Update start and stop of gene
+				        	 
+				        	 if(genes.get(attributes.get("gene_id")).getStart() > Integer.parseInt(tokenizedRow[3]) ) {
+				        		 
+				        		 genes.get(attributes.get("gene_id")).setStart(Integer.parseInt(tokenizedRow[3]));
+				        	 }
+				        	 
+				        	 if(genes.get(attributes.get("gene_id")).getStop() < Integer.parseInt(tokenizedRow[4]) ) {
+				        		 
+				        		 genes.get(attributes.get("gene_id")).setStop(Integer.parseInt(tokenizedRow[4]));
+				        	 }
+			        		 
 			        	 }else{
-			        		 Vector<Region> v = new Vector();
-			        		 v.add(e);
-			        		 exon= new RegionVector(attributes.get("gene_id"), v);
-			        		 exons.put(attributes.get("gene_id"), exon);
+			        		 //Vector<Region> v = new Vector();
+			        		 ArrayList<String> transcriptIds= new ArrayList();
+			        		 Vector<Region> rv1= new Vector();
+			        		 Vector<Region> rv2= new Vector();
+			        		 //RegionVector rv = new RegionVector();
+			        		 Gene newGene = new Gene(attributes.get("gene_id"), attributes.get("gene_name"),tokenizedRow[0], Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),  attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6], transcriptIds, rv1, rv2);
+			        		 genes.put(attributes.get("gene_id"), newGene);
+			        		 genes.get(attributes.get("gene_id")).getExon().add(e);
 
 			        	 }
+			        	 
+
 
 
 
@@ -111,16 +162,36 @@ public class parserGTF {
 			        	//c = new Region(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
 			        	//cds.getVector().add(c);
 
-			        	 c = new Region(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
+			        	 e = new Region(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
 
-			        	 if(cdss.containsKey(attributes.get("gene_id"))){
 
-			        		 cdss.get(attributes.get("gene_id")).getVector().add(c);
+			        	 if(genes.containsKey(attributes.get("gene_id"))){
+
+			        		 //exons.get(attributes.get("gene_id")).getVector().add(e);
+			        		 if(!genes.get(attributes.get("gene_id")).getCds().contains(e)) {
+			        		 genes.get(attributes.get("gene_id")).getCds().add(e);
+			        		 }
+				        	 //Update start and stop of gene
+				        	 
+				        	 if(genes.get(attributes.get("gene_id")).getStart() > Integer.parseInt(tokenizedRow[3]) ) {
+				        		 
+				        		 genes.get(attributes.get("gene_id")).setStart(Integer.parseInt(tokenizedRow[3]));
+				        	 }
+				        	 
+				        	 if(genes.get(attributes.get("gene_id")).getStop() < Integer.parseInt(tokenizedRow[4]) ) {
+				        		 
+				        		 genes.get(attributes.get("gene_id")).setStop(Integer.parseInt(tokenizedRow[4]));
+				        	 }
+			        		 
 			        	 }else{
-			        		 Vector<Region> v = new Vector();
-			        		 v.add(c);
-			        		 cds= new RegionVector(attributes.get("gene_id"), v);
-			        		 cdss.put(attributes.get("gene_id"), cds);
+			        		 //Vector<Region> v = new Vector();
+			        		 ArrayList<String> transcriptIds= new ArrayList();
+			        		 Vector<Region> rv1= new Vector();
+			        		 Vector<Region> rv2= new Vector();
+			        		 //RegionVector rv = new RegionVector();
+			        		 Gene newGene = new Gene(attributes.get("gene_id"), attributes.get("gene_name"),tokenizedRow[0], Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),  attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6], transcriptIds, rv1, rv2);
+			        		 genes.put(attributes.get("gene_id"), newGene);
+			        		 genes.get(attributes.get("gene_id")).getCds().add(e);
 
 			        	 }
 
@@ -148,21 +219,27 @@ public class parserGTF {
 
 			}
 
-			for (String key : exons.keySet()) {
-
-				String geneId = key;
-				RegionVector rv = exons.get(key);
-				//genes.get(key).getExon().put(geneId, rv);
-				genes.get(key).setExon(rv.getVector());
-
-			}
+//			for (String key : exons.keySet()) {
+//
+//				String geneId = key;
+//				RegionVector rv = exons.get(key);
+//				//genes.get(key).getExon().put(geneId, rv);
+//				if(genes.get(key) != null) {
+//				genes.get(key).setExon(rv.getVector());
+//				}
+//
+//			}
 
 			for (String key : cdss.keySet()) {
 
 				String geneId = key;
 				RegionVector rv = cdss.get(key);
 				//genes.get(key).getCds().put(geneId, rv);
+				if(genes.get(key) != null) {
 				genes.get(key).setCds(rv.getVector());
+				}else {
+					//System.out.println(key);
+				}
 
 
 			}
@@ -177,7 +254,10 @@ public class parserGTF {
 			System.out.println("Done");
 
 			//Utilities.printGenes(genes);
-
+			//genes.keySet()
+			
+			//RegionVector.merge(Runner.annotation.getGenes().values()..getCds());
+			
 
 		} catch (IOException e) {
 			e.printStackTrace();

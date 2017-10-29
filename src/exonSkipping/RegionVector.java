@@ -6,10 +6,9 @@ import java.util.Vector;
 
 public class RegionVector {
 
+	private String id;
 	private String geneId;
 	private Vector<Region> vector;
-
-
 
 
 
@@ -20,15 +19,104 @@ public class RegionVector {
 	}
 
 
-
-
-
-	public RegionVector(String geneId, Vector<Region> vector) {
+	
+	
+	public RegionVector(String id, String geneId, Vector<Region> vector) {
 		super();
+		this.id = id;
 		this.geneId = geneId;
 		this.vector = vector;
 
 	}
+
+
+
+
+	public String getId() {
+		return id;
+	}
+
+
+
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+
+
+
+	public Comparator<Region> getComparator() {
+		return comparator;
+	}
+
+
+
+
+	public void setComparator(Comparator<Region> comparator) {
+		this.comparator = comparator;
+	}
+
+
+
+
+	public int getStart() {
+		
+		Collections.sort(this.vector, comparator);
+		return this.vector.firstElement().getStart();
+		
+	}
+	
+	
+	public int getStop() {
+		
+		Collections.sort(this.vector, comparator);
+		return this.vector.lastElement().getEnd();
+	}
+	
+	
+	public Vector<Region> merge() {
+		Vector<Region> v = this.vector;
+		
+		Collections.sort(this.vector, comparator);
+		//Utilities.printVector(vector);
+		Vector<Region> merged = new Vector<Region>();	
+		int tempStart=0; 
+		int tempStop=0;
+		
+		for (Region region : v) {
+			
+			if(tempStart == 0) {
+				tempStart = region.getStart();
+				tempStop = region.getEnd();
+				
+			}
+			else {
+				
+				if(tempStop>= region.getStart()) {
+					//overlap
+					//Region r = new Region(tempStart, region.getEnd());
+					//merged.add(r);
+					tempStop= region.getEnd();
+				}
+				else {
+					Region r = new Region(tempStart, tempStop);
+					merged.add(r);
+					tempStart=region.getStart();
+					tempStop=region.getEnd();
+					
+				}
+			}
+			
+			
+		}
+		
+		merged.add(new Region(tempStart, tempStop));
+		
+		return merged; 
+	}
+	
+	
 
 
 	Comparator<Region> comparator = new Comparator<Region>() {
@@ -107,6 +195,8 @@ public class RegionVector {
 	public void setVector(Vector<Region> vector) {
 		this.vector = vector;
 	}
+	
+	
 
 
 

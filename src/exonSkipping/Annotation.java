@@ -2,11 +2,12 @@ package exonSkipping;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Vector;
 
 public class Annotation {
 
 	private HashMap<String,Gene > genes;
-	private HashMap<String, Transcript> transcripts;
+	private HashMap<String, RegionVector> transcripts;
 	private HashMap<String, RegionVector> exons;
 	private HashMap<String, RegionVector> cds;
 
@@ -42,14 +43,12 @@ public class Annotation {
 
 	int getNumberOfCds(Gene gene) {
 
-
-		int number= gene.getCds().size();
-
-
-
-
-
-
+		RegionVector rv = new RegionVector("hola","joa", gene.getCds());
+	
+		Vector<Region> v = rv.merge();
+		int number= v.size();
+		Utilities.printVector(v);
+		
 		return number;
 
 	}
@@ -85,11 +84,11 @@ public class Annotation {
 		this.cds = cds;
 	}
 
-	public HashMap<String, Transcript> getTranscripts() {
+	public HashMap<String, RegionVector> getTranscripts() {
 		return transcripts;
 	}
 
-	public void setTranscripts(HashMap<String, Transcript> transcripts) {
+	public void setTranscripts(HashMap<String, RegionVector> transcripts) {
 		this.transcripts = transcripts;
 	}
 
