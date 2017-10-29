@@ -6,8 +6,6 @@ import java.util.Vector;
 
 public class RegionVector {
 
-	private String id;
-	private String geneId;
 	private Vector<Region> vector;
 
 
@@ -16,32 +14,30 @@ public class RegionVector {
 	public RegionVector() {
 		super();
 		// TODO Auto-generated constructor stub
+		this.vector = new Vector();
 	}
 
 
-	
-	
-	public RegionVector(String id, String geneId, Vector<Region> vector) {
+
+
+	public RegionVector( Vector<Region> vector) {
 		super();
-		this.id = id;
-		this.geneId = geneId;
 		this.vector = vector;
 
 	}
 
+	public Region getFirst(){
+
+		Collections.sort(this.vector, comparator);
+
+		return this.vector.firstElement();
 
 
-
-	public String getId() {
-		return id;
 	}
 
 
+	public
 
-
-	public void setId(String id) {
-		this.id = id;
-	}
 
 
 
@@ -61,42 +57,70 @@ public class RegionVector {
 
 
 	public int getStart() {
-		
+
 		Collections.sort(this.vector, comparator);
 		return this.vector.firstElement().getStart();
-		
+
 	}
-	
-	
+
+
 	public int getStop() {
-		
+
 		Collections.sort(this.vector, comparator);
 		return this.vector.lastElement().getEnd();
 	}
-	
-	
-	public Vector<Region> merge() {
+
+
+
+
+
+	public RegionVector getOnCds(RegionVector CDS){
+		RegionVector rv = new RegionVector();
+
+		Collections.sort(this.vector, comparator);
+		Collections.sort(CDS.vector, comparator);
+
+		for(Region r : this.vector){
+			for(Region cds: CDS.getVector()){
+
+					if(cds.getStart() <= r.getStart() && cds.getEnd() >= r.getEnd() ){
+
+						rv.getVector().add(r);
+
+					}
+
+
+			}
+
+		}
+
+		return rv;
+
+	}
+
+	public RegionVector merge() {
 		Vector<Region> v = this.vector;
-		
+
 		Collections.sort(this.vector, comparator);
 		//Utilities.printVector(vector);
-		Vector<Region> merged = new Vector<Region>();	
-		int tempStart=0; 
+		Vector<Region> merged = new Vector<Region>();
+		int tempStart=0;
 		int tempStop=0;
-		
+
 		for (Region region : v) {
-			
+
 			if(tempStart == 0) {
 				tempStart = region.getStart();
 				tempStop = region.getEnd();
-				
+
 			}
 			else {
-				
-				if(tempStop>= region.getStart()) {
+
+				if(tempStop>= (region.getStart()-1)) {
 					//overlap
 					//Region r = new Region(tempStart, region.getEnd());
 					//merged.add(r);
+					System.out.println(region.getEnd());
 					tempStop= region.getEnd();
 				}
 				else {
@@ -104,19 +128,20 @@ public class RegionVector {
 					merged.add(r);
 					tempStart=region.getStart();
 					tempStop=region.getEnd();
-					
+
 				}
 			}
-			
-			
+
+
 		}
-		
+
 		merged.add(new Region(tempStart, tempStop));
-		
-		return merged; 
+
+		RegionVector mergedRv = new RegionVector(merged);
+		return mergedRv;
 	}
-	
-	
+
+
 
 
 	Comparator<Region> comparator = new Comparator<Region>() {
@@ -130,23 +155,27 @@ public class RegionVector {
 
 
 
-	public Vector<Region> inverse(){
+	public RegionVector inverse(){
 
 		Vector<Region> reverse = new Vector<Region>();
-		int x1 = Runner.annotation.getGeneById(this.geneId).getStart();
-		int x3= Runner.annotation.getGeneById(this.geneId).getStart();
+		//int x1 = Runner.annotation.getGeneById(this.geneId).getStart();
+		//int x3= Runner.annotation.getGeneById(this.geneId).getStart();
 		Region intron;
+
+		RegionVector merged = this.merge();
 		Collections.sort(vector, comparator);
 		//System.out.println(Collections.singletonList(this.vector));
-		Utilities.printVector(vector);
+		int x1= Integer.MAX_VALUE;
+		this.vector.firstElement().getStart();
+
 		//angenommen die sind sortiert
-		for (Region r : this.vector) {
+		for (Region r : merged.getVector()) {
 
 			//nop exon at beginning
 			int x2 = r.getStart();
 
 			if(x2>x1){
-				intron = new Region(x1,x2);
+				intron = new Region(x1+1,x2-1);
 				x1= r.getEnd();
 				reverse.add(intron);
 			}else{
@@ -159,12 +188,10 @@ public class RegionVector {
 
 		}
 
-		intron = new Region(x1,x3);
-		reverse.add(intron);
 
+		RegionVector rv = new RegionVector(reverse);
 
-
-		return reverse;
+		return rv;
 	}
 
 
@@ -177,16 +204,10 @@ public class RegionVector {
 
 
 
-	public String getGeneId() {
-		return geneId;
+	public int getNumberRegion(){
+		return this.vector.size();
+
 	}
-
-
-	public void setGeneId(String geneId) {
-		this.geneId = geneId;
-	}
-
-
 	public Vector<Region> getVector() {
 		return vector;
 	}
@@ -195,8 +216,8 @@ public class RegionVector {
 	public void setVector(Vector<Region> vector) {
 		this.vector = vector;
 	}
-	
-	
+
+
 
 
 

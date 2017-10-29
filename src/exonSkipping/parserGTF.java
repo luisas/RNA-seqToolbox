@@ -12,9 +12,9 @@ public class parserGTF {
 
 
 	public static void updateStartStop(String geneId) {
-		
-		
-		
+
+
+
 	}
 
 	public static void parse(String filename) {
@@ -24,9 +24,7 @@ public class parserGTF {
 		String tokenizedRow[] = new String[8];
 		HashMap<String, String> attributes= new HashMap();
 		HashMap<String, Gene> genes = new HashMap();
-		HashMap<String, RegionVector> transcripts = new HashMap();
-		HashMap<String, RegionVector> exons= new HashMap();
-		HashMap<String, RegionVector> cdss= new HashMap();
+
 
 
 
@@ -35,12 +33,16 @@ public class parserGTF {
 		try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
 
 			String currentLine;
+
+
 			Gene gene= new Gene();
-			RegionVector transcript;
+			Transcript transcript=new Transcript();
+			Exon exon = new Exon();
+			Protein protein = new Protein();
 			Region e;
 			Region c;
-			RegionVector exon = new RegionVector();
-			RegionVector cds = new RegionVector();
+
+
 
 		//Each line is tokenized
 			while ((currentLine = br.readLine()) != null ) {
@@ -65,7 +67,6 @@ public class parserGTF {
 
 			        }
 
-			        //printing statements for testing
 			        //System.out.println(Arrays.asList(tokenizedRow));
 			        //System.out.println(Collections.singletonList(attributes));
 
@@ -73,127 +74,176 @@ public class parserGTF {
 			        //Create and save the corresponding object
 			        if(tokenizedRow[2].equals("gene")) {
 
-			        		 ArrayList<String> transcriptIds= new ArrayList();
-			        		 Vector<Region> rv1= new Vector();
-			        		 Vector<Region> rv2= new Vector();
-			        		 gene = new Gene(attributes.get("gene_id"), attributes.get("gene_name"),tokenizedRow[0], Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),  attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6], transcriptIds, rv1, rv2);
-				        	 genes.put(gene.getId(), gene);
+			        	HashMap<String, Transcript> transcriptsHM= new HashMap<String, Transcript>();
+    					RegionVector regionVectorTranscripts=  new RegionVector();
+    					HashMap<String, Protein> proteins = new HashMap<String, Protein>();
+
+			        	gene= new Gene(attributes.get("gene_id"), attributes.get("gene_name"), tokenizedRow[0],
+			        				 		Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),
+			        				 		attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6],
+			        				 		transcriptsHM, regionVectorTranscripts, proteins);
+
+			        	//gene = new Gene(attributes.get("gene_id"), attributes.get("gene_name"),tokenizedRow[0], Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),  attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6], transcriptIds, rv1, rv2);
+				        genes.put(gene.getId(), gene);
 
 
 			        }
+		//----------------TRANSCRIPT
 			        else if(tokenizedRow[2].equals("transcript")) {
 
 			        		//transcript= new Transcript(attributes.get("transcript_id"), attributes.get("transcript_name"), Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),attributes.get("gene_id"), attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6]);
 			        		//transcripts.put(transcript.getId(), transcript);
-			        		
-			        		//Save the id in the gene list
-			        		if(genes.containsKey(attributes.get("gene_id"))){
-			        			genes.get(attributes.get("geneId")).getTranscriptIds().add(attributes.get("transcript_id"));
-			        		}else {
-			        			 ArrayList<String> transcriptIds= new ArrayList();
-				        		 Vector<Region> rv1= new Vector();
-				        		 Vector<Region> rv2= new Vector();
-			        			 Gene newGene = new Gene(attributes.get("gene_id"), attributes.get("gene_name"),tokenizedRow[0], Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),  attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6], transcriptIds, rv1, rv2);
-				        		 genes.put(attributes.get("gene_id"), newGene);
-			        		}
-			        		
-			        		
-			        		Region r = new Region(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
-			        		//Save the real element
-			        		if(transcripts.containsKey(attributes.get("transcript_id"))) {
-			        			transcripts.get(attributes.get("transcript_id")).getVector().add(r);
-			        		}else {
-			        			Vector<Region> rv1= new Vector();
-			        			rv1.add(r);
-				        		transcript= new RegionVector(attributes.get("transcript_id"),attributes.get("gene_id"),rv1);
-			        			transcripts.put(attributes.get("transcript_id"), transcript);
-			        		}
-			        		
-			        		
-			        		
-			        		
-			        	
+
+			        	 HashMap<String, Exon> exonsHM = new HashMap<String,Exon>();
+	        			 RegionVector regionVectorExons = new RegionVector();
+	        			 RegionVector regionVectorCds = new RegionVector();
+
+
+
+
+			        	transcript = new Transcript(attributes.get("transcript_id"),attributes.get("transcript_name"), Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),
+			        				attributes.get("gene_id"), exonsHM, regionVectorExons,regionVectorCds);
+
+			        	Region r = new Region(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
+
+
+			        	//Save the id in the gene list
+			        	if(!genes.containsKey(attributes.get("gene_id"))){
+
+			        		HashMap<String, Transcript> transcriptsHM= new HashMap<String, Transcript>();
+		    				RegionVector regionVectorTranscripts=  new RegionVector();
+		    				HashMap<String, Protein> proteins = new HashMap<String, Protein>();
+
+					        	gene= new Gene(attributes.get("gene_id"), attributes.get("gene_name"), tokenizedRow[0],
+					        				 		Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),
+					        				 		attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6],
+					        				 		transcriptsHM, regionVectorTranscripts, proteins);
+
+					        	//gene = new Gene(attributes.get("gene_id"), attributes.get("gene_name"),tokenizedRow[0], Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),  attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6], transcriptIds, rv1, rv2);
+						        genes.put(gene.getId(), gene);
+
+			        	}
+
+			        	genes.get(attributes.get("gene_id")).getTranscripts().put(attributes.get("transcript_id"), transcript);
+		        		genes.get(attributes.get("gene_id")).getRegionVectorTranscripts().getVector().add(r);
+
+
+
+
+
+
+
 
 			        }
+			  //----------------EXON
 			        else if(tokenizedRow[2].equals("exon")) {
 			        		 //exon = new RegionVector(attributes.get("exon_id"), attributes.get("exon_name"), Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]), tokenizedRow[6], attributes.get("gene_id"), attributes.get("gene_biotype"), tokenizedRow[1]);
 			        		 //exons.put(exon.getId(), exon);
-			        	 e = new Region(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
 
-			        	 if(genes.containsKey(attributes.get("gene_id"))){
 
-			        		 //exons.get(attributes.get("gene_id")).getVector().add(e);
-			        		 genes.get(attributes.get("gene_id")).getExon().add(e);
-				        	 //Update start and stop of gene
-				        	 
-				        	 if(genes.get(attributes.get("gene_id")).getStart() > Integer.parseInt(tokenizedRow[3]) ) {
-				        		 
-				        		 genes.get(attributes.get("gene_id")).setStart(Integer.parseInt(tokenizedRow[3]));
-				        	 }
-				        	 
-				        	 if(genes.get(attributes.get("gene_id")).getStop() < Integer.parseInt(tokenizedRow[4]) ) {
-				        		 
-				        		 genes.get(attributes.get("gene_id")).setStop(Integer.parseInt(tokenizedRow[4]));
-				        	 }
-			        		 
-			        	 }else{
-			        		 //Vector<Region> v = new Vector();
-			        		 ArrayList<String> transcriptIds= new ArrayList();
-			        		 Vector<Region> rv1= new Vector();
-			        		 Vector<Region> rv2= new Vector();
-			        		 //RegionVector rv = new RegionVector();
-			        		 Gene newGene = new Gene(attributes.get("gene_id"), attributes.get("gene_name"),tokenizedRow[0], Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),  attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6], transcriptIds, rv1, rv2);
-			        		 genes.put(attributes.get("gene_id"), newGene);
-			        		 genes.get(attributes.get("gene_id")).getExon().add(e);
+			        	exon= new Exon(Integer.parseInt(attributes.get("exon_number")), Integer.parseInt(tokenizedRow[3]),Integer.parseInt(tokenizedRow[4]), attributes.get("transcript_id"));
+			        	e = new Region(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
+
+			        	 if(!genes.containsKey(attributes.get("gene_id"))){
+
+			        		 HashMap<String, Transcript> transcriptsHM= new HashMap<String, Transcript>();
+			    				RegionVector regionVectorTranscripts=  new RegionVector();
+			    				HashMap<String, Protein> proteins = new HashMap<String, Protein>();
+
+						        	gene= new Gene(attributes.get("gene_id"), attributes.get("gene_name"), tokenizedRow[0],
+						        				 		Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),
+						        				 		attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6],
+						        				 		transcriptsHM, regionVectorTranscripts, proteins);
+
+						        	//gene = new Gene(attributes.get("gene_id"), attributes.get("gene_name"),tokenizedRow[0], Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),  attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6], transcriptIds, rv1, rv2);
+							        genes.put(gene.getId(), gene);
+
 
 			        	 }
-			        	 
+
+
+			        	if(!genes.get(attributes.get("gene_id")).getTranscripts().containsKey(attributes.get("transcript_id"))){
+
+				        	 HashMap<String, Exon> exonsHM = new HashMap<String,Exon>();
+		        			 RegionVector regionVectorExons = new RegionVector();
+		        			 RegionVector regionVectorCds = new RegionVector();
 
 
 
+				        	transcript = new Transcript(attributes.get("transcript_id"),attributes.get("transcript_name"), Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),
+				        				attributes.get("gene_id"), exonsHM, regionVectorExons, regionVectorCds);
+
+				        	Region r = new Region(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
+				        	genes.get(attributes.get("gene_id")).getTranscripts().put(attributes.get("transcript_id"), transcript);
+			        		genes.get(attributes.get("gene_id")).getRegionVectorTranscripts().getVector().add(r);
+
+			        	}
+
+			        	else{
+
+			        	gene.updateStartStop(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
+			        	transcript.updateStartStop(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
+
+			        	}
 
 
+			        	genes.get(attributes.get("gene_id")).getTranscripts().get(attributes.get("transcript_id")).getExons().put(attributes.get("exon_number"), exon);
+		        		genes.get(attributes.get("gene_id")).getTranscripts().get(attributes.get("transcript_id")).getRegionVectorExons().getVector().add(e);
+
+		  //--------------------------CDS
 
 			        }
 			        else if(tokenizedRow[2].equals("CDS")) {
-			        	//ERROR
-		        		//cds = new RegionVector(attributes.get("protein_id"), attributes.get("gene_name"), Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]), tokenizedRow[6], attributes.get("gene_id"), attributes.get("gene_biotype"), tokenizedRow[1]);
-		        		//cdss.put(cds.getId(), cds);
-			        	//c = new Region(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
-			        	//cds.getVector().add(c);
-
-			        	 e = new Region(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
 
 
-			        	 if(genes.containsKey(attributes.get("gene_id"))){
+			        	protein = new Protein(attributes.get("protein_id"), attributes.get("gene_id"), new RegionVector());
+			        	c= new Region(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
 
-			        		 //exons.get(attributes.get("gene_id")).getVector().add(e);
-			        		 if(!genes.get(attributes.get("gene_id")).getCds().contains(e)) {
-			        		 genes.get(attributes.get("gene_id")).getCds().add(e);
-			        		 }
-				        	 //Update start and stop of gene
-				        	 
-				        	 if(genes.get(attributes.get("gene_id")).getStart() > Integer.parseInt(tokenizedRow[3]) ) {
-				        		 
-				        		 genes.get(attributes.get("gene_id")).setStart(Integer.parseInt(tokenizedRow[3]));
-				        	 }
-				        	 
-				        	 if(genes.get(attributes.get("gene_id")).getStop() < Integer.parseInt(tokenizedRow[4]) ) {
-				        		 
-				        		 genes.get(attributes.get("gene_id")).setStop(Integer.parseInt(tokenizedRow[4]));
-				        	 }
-			        		 
-			        	 }else{
-			        		 //Vector<Region> v = new Vector();
-			        		 ArrayList<String> transcriptIds= new ArrayList();
-			        		 Vector<Region> rv1= new Vector();
-			        		 Vector<Region> rv2= new Vector();
-			        		 //RegionVector rv = new RegionVector();
-			        		 Gene newGene = new Gene(attributes.get("gene_id"), attributes.get("gene_name"),tokenizedRow[0], Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),  attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6], transcriptIds, rv1, rv2);
-			        		 genes.put(attributes.get("gene_id"), newGene);
-			        		 genes.get(attributes.get("gene_id")).getCds().add(e);
+
+			        	if(!genes.containsKey(attributes.get("gene_id"))){
+
+			        		 HashMap<String, Transcript> transcriptsHM= new HashMap<String, Transcript>();
+			    				RegionVector regionVectorTranscripts=  new RegionVector();
+			    				HashMap<String, Protein> proteins = new HashMap<String, Protein>();
+
+						        	gene= new Gene(attributes.get("gene_id"), attributes.get("gene_name"), tokenizedRow[0],
+						        				 		Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),
+						        				 		attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6],
+						        				 		transcriptsHM, regionVectorTranscripts, proteins);
+
+						        	//gene = new Gene(attributes.get("gene_id"), attributes.get("gene_name"),tokenizedRow[0], Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),  attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6], transcriptIds, rv1, rv2);
+							        genes.put(gene.getId(), gene);
+
 
 			        	 }
+			        	if(!genes.get(attributes.get("gene_id")).getTranscripts().containsKey(attributes.get("transcript_id"))){
+
+				        	 HashMap<String, Exon> exonsHM = new HashMap<String,Exon>();
+		        			 RegionVector regionVectorExons = new RegionVector();
+		        			 RegionVector regionVectorCds = new RegionVector();
+
+
+
+				        	transcript = new Transcript(attributes.get("transcript_id"),attributes.get("transcript_name"), Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),
+				        				attributes.get("gene_id"), exonsHM, regionVectorExons, regionVectorCds);
+
+				        	Region r = new Region(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
+				        	genes.get(attributes.get("gene_id")).getTranscripts().put(attributes.get("transcript_id"), transcript);
+			        		genes.get(attributes.get("gene_id")).getRegionVectorTranscripts().getVector().add(r);
+
+			        	}
+			        	else{
+
+				        	gene.updateStartStop(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
+				        	transcript.updateStartStop(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
+
+				        }
+
+
+			        	genes.get(attributes.get("gene_id")).getProteins().put(attributes.get("protein_id"), protein);
+		        		genes.get(attributes.get("gene_id")).getProteins().get(attributes.get("protein_id")).getRegionVectorCds().getVector().add(c);
+		        		genes.get(attributes.get("gene_id")).getTranscripts().get(attributes.get("transcript_id")).getRegionVectorCds().getVector().add(c);
+
 
 
 
@@ -210,54 +260,22 @@ public class parserGTF {
 			}
 
 
-			//Fill the list of transcript for the genes.
 
-			for (String key : transcripts.keySet()) {
+			for(String key: genes.keySet()){
 
-			    String geneId= transcripts.get(key).getGeneId();
-			    Gene.addTranscriptId(key,genes.get(geneId));
+				genes.get(key).setRegionVectorTranscripts(genes.get(key).getRegionVectorTranscripts().merge());
 
 			}
-
-//			for (String key : exons.keySet()) {
-//
-//				String geneId = key;
-//				RegionVector rv = exons.get(key);
-//				//genes.get(key).getExon().put(geneId, rv);
-//				if(genes.get(key) != null) {
-//				genes.get(key).setExon(rv.getVector());
-//				}
-//
-//			}
-
-			for (String key : cdss.keySet()) {
-
-				String geneId = key;
-				RegionVector rv = cdss.get(key);
-				//genes.get(key).getCds().put(geneId, rv);
-				if(genes.get(key) != null) {
-				genes.get(key).setCds(rv.getVector());
-				}else {
-					//System.out.println(key);
-				}
-
-
-			}
-
 
 
 			Runner.annotation.setGenes(genes);
-			Runner.annotation.setTranscripts(transcripts);
-			Runner.annotation.setExons(exons);
-			Runner.annotation.setCds(cdss);
 
 			System.out.println("Done");
 
-			//Utilities.printGenes(genes);
-			//genes.keySet()
-			
+			Utilities.printGenes(genes);
+			//genes.keySet();
 			//RegionVector.merge(Runner.annotation.getGenes().values()..getCds());
-			
+
 
 		} catch (IOException e) {
 			e.printStackTrace();

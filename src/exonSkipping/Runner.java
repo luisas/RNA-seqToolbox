@@ -17,7 +17,7 @@ public class Runner {
 
 	static Annotation annotation= new Annotation();
 
-	
+
 	public static void main(String[] args) {
 		String outputfile = "";
 
@@ -27,12 +27,12 @@ public class Runner {
 			options.addOption("o", true, "output file path");
 			CommandLineParser parser = new DefaultParser();
 			CommandLine cmd = parser.parse( options, args);
-			
+
 			String myFileName = cmd.getOptionValue("gtf");
 			outputfile= cmd.getOptionValue("o");
 			parserGTF.parse(myFileName);
 
-			
+
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -45,7 +45,7 @@ public class Runner {
 		//String myFileName = "/home/s/santus/Desktop/GoBi/small.gtf";
 
 		//parserGTF.parse(myFileName);
-				
+
 
 		try {
 			// Tab delimited file will be written to data with the name tab-file.csv
@@ -61,31 +61,45 @@ public class Runner {
 		    while (it.hasNext()) {
 		        Map.Entry pair = (Map.Entry)it.next();
 				Gene myGene= annotation.getGeneById(pair.getKey().toString());
-				//RegionVector rv = new RegionVector(myGene.getId(),myGene.getExon() );
-				//Vector<Region> introns= rv.inverse();
 
-				//for(Region r: introns ){
+				//for(String keyt: myGene.getTranscripts().keySet()){
 
-		        //ID
-				dos.print(pair.getKey().toString() +"\t");
-				//NAME
-				dos.print(myGene.getName()+"\t");
-				//CHR
-				dos.print(myGene.getChr()+"\t");
-				//STRAND
-				dos.print(myGene.getStrand()+"\t");
-				//nprots (number of annotated CDS in the gene)
-				dos.print(annotation.getNumberOfCds(myGene)+ "\t");
-				//ntrans (number of annotated transcripts in the gene)
-				dos.print(annotation.getNumberTranscripts(myGene)+ "\t");
+					//RegionVector introns = myGene.getTranscripts().get(keyt).getRegionVectorExons().inverse();
 
-				//SV (the SV intron as start:end)
-				//dos.print(r.getStart()+":"+r.getEnd()+ "\t");
-				//System.out.println(Collections.singletonList(introns));
 
-				//Utilities.printVector(myGene.getExon());
-				dos.println();
 
+
+
+
+
+					//Vector<Region> introns= rv.inverse();
+
+					//for(Region r: introns.getVector() ){
+
+				        //ID
+						dos.print(pair.getKey().toString() +"\t");
+						System.out.println(pair.getKey().toString() +"\t");
+						System.out.println("----------");
+						//NAME
+						dos.print(myGene.getName()+"\t");
+						//CHR
+						dos.print(myGene.getChr()+"\t");
+						//STRAND
+						dos.print(myGene.getStrand()+"\t");
+						//nprots (number of annotated CDS in the gene)
+						dos.print(myGene.getNumberCds()+ "\t");
+						//ntrans (number of annotated transcripts in the gene)
+						dos.print(myGene.getNumberTranscripts()+ "\t");
+						System.out.println(myGene.getNumberTranscripts() +"\t"+ myGene.getNumberCds());
+
+						//SV (the SV intron as start:end)
+						//dos.print(r.getStart()+":"+r.getEnd()+ "\t");
+						//System.out.println(Collections.singletonList(introns));
+
+						//Utilities.printVector(myGene.getExon());
+						dos.println();
+					//}
+				//}
 				//}
 
 
@@ -104,24 +118,47 @@ public class Runner {
 				//max skipped bases the maximum number of skipped bases (joint length of skipped exons) in any WT/SV pair
 
 
-				 Vector<Region> prova = new Vector<Region>();
-				 Region r = new Region(1,5);
-				 Region r1= new Region(2,7);
-				 Region r4 = new Region(8,9);
-				 prova.add(r);
-				 prova.add(r4);
-				 prova.add(r1);
-				 
-				 Vector<Region> prova1 = myGene.getCds();
-				 
-				 RegionVector rv = new RegionVector("id", "id",prova1);
-				 
-				Vector<Region> merged = rv.merge();
-				
+
+
+				// Vector<Region> prova1 = myGene.getCds();
+
+				 //RegionVector rv = new RegionVector("id", "id",prova1);
+
+				//Vector<Region> merged = rv.merge();
+
 				//Utilities.printVector(merged);
 
-				System.out.println(myGene.getStart());
-				System.out.println(myGene.getStop());
+				//System.out.println(myGene.getStart());
+				//System.out.println(myGene.getStop());
+
+
+				RegionVector test = new RegionVector();
+				Region a = new Region(1,4);
+				Region b = new Region(6,8);
+				Region c = new Region(9,11);
+				Region d = new Region(16,20);
+
+				test.getVector().add(a);
+				test.getVector().add(b);
+				test.getVector().add(c);
+				test.getVector().add(d);
+
+
+				RegionVector testcds = new RegionVector();
+				Region e = new Region(1,8);
+
+				testcds.getVector().add(e);
+
+				//Utilities.printRegionVector(test.getOnCds(testcds));
+				//Utilities.printRegionVector(test.inverse());
+
+
+
+
+
+
+
+
 		        it.remove(); // avoids a ConcurrentModificationException
 
 		    }
@@ -130,7 +167,7 @@ public class Runner {
 
 
 
-		   
+
 
 
 			dos.close();

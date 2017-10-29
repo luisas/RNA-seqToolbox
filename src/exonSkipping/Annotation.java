@@ -7,9 +7,9 @@ import java.util.Vector;
 public class Annotation {
 
 	private HashMap<String,Gene > genes;
-	private HashMap<String, RegionVector> transcripts;
-	private HashMap<String, RegionVector> exons;
-	private HashMap<String, RegionVector> cds;
+	//private HashMap<String, RegionVector> transcripts;
+	//private HashMap<String, RegionVector> exons;
+	//private HashMap<String, RegionVector> cds;
 
 
 
@@ -35,7 +35,7 @@ public class Annotation {
 
 	int getNumberTranscripts(Gene gene) {
 
-		return gene.getTranscriptIds().size();
+		return 0;
 
 
 	}
@@ -43,13 +43,13 @@ public class Annotation {
 
 	int getNumberOfCds(Gene gene) {
 
-		RegionVector rv = new RegionVector("hola","joa", gene.getCds());
-	
-		Vector<Region> v = rv.merge();
-		int number= v.size();
-		Utilities.printVector(v);
-		
-		return number;
+		//RegionVector rv = new RegionVector("hola","joa", gene.getCds());
+
+		//Vector<Region> v = rv.merge();
+		//int number= v.size();
+		//Utilities.printVector(v);
+
+		return 0;
 
 	}
 
@@ -68,29 +68,6 @@ public class Annotation {
 
 
 
-	public HashMap<String, RegionVector> getExons() {
-		return exons;
-	}
-
-	public void setExons(HashMap<String, RegionVector> exons) {
-		this.exons = exons;
-	}
-
-	public HashMap<String, RegionVector> getCds() {
-		return cds;
-	}
-
-	public void setCds(HashMap<String, RegionVector> cds) {
-		this.cds = cds;
-	}
-
-	public HashMap<String, RegionVector> getTranscripts() {
-		return transcripts;
-	}
-
-	public void setTranscripts(HashMap<String, RegionVector> transcripts) {
-		this.transcripts = transcripts;
-	}
 
 
 
