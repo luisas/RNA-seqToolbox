@@ -1,6 +1,5 @@
 package exonSkipping;
 
-import java.util.HashMap;
 
 public class Protein {
 
@@ -25,19 +24,19 @@ public class Protein {
 		//this.cds = cds;
 		this.regionVectorCds = regionVectorCds;
 	}
-	
+
 	public int getStart(){
-		
-		return this.getRegionVectorCds().getStart(); 
+
+		return this.getRegionVectorCds().getStart();
 	}
 
 
-	
+
 	public int getStop(){
-		
-		return this.getRegionVectorCds().getStop(); 
+
+		return this.getRegionVectorCds().getStop();
 	}
-	
+
 	public String getId() {
 		return id;
 	}

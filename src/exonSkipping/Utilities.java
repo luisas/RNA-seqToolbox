@@ -1,6 +1,6 @@
 package exonSkipping;
 
-import java.util.Collections;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -8,6 +8,20 @@ import java.util.Vector;
 
 public class Utilities {
 
+
+
+	public static StringBuilder prettyRegionVector(RegionVector rv){
+
+		StringBuilder sb = new StringBuilder();
+		String prefix = "";
+		for(Region r: rv.getVector() ){
+			sb.append(prefix);
+			sb.append(r.getStart()+":"+r.getEnd());
+			prefix = "|";
+		}
+
+		return sb;
+	}
 
 
 	public static StringBuilder printID(Set<String> set){
@@ -37,9 +51,6 @@ public class Utilities {
 
 
 	}
-
-
-
 
 
 	public static void printTranscripts(Gene gene){

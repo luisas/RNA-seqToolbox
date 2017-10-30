@@ -3,27 +3,21 @@ package exonSkipping;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringTokenizer;
-import java.util.Vector;
+
 
 public class parserGTF {
 
 
-	public static void updateStartStop(String geneId) {
-
-
-
-	}
 
 	public static void parse(String filename) {
 
 
 		//Initialize array ans hashmap
 		String tokenizedRow[] = new String[8];
-		HashMap<String, String> attributes= new HashMap();
-		HashMap<String, Gene> genes = new HashMap();
+		HashMap<String, String> attributes= new HashMap<String, String>();
+		HashMap<String, Gene> genes = new HashMap<String, Gene>();
 
 
 
@@ -96,13 +90,13 @@ public class parserGTF {
 
 			        	 HashMap<String, Exon> exonsHM = new HashMap<String,Exon>();
 	        			 RegionVector regionVectorExons = new RegionVector();
-	        			 RegionVector regionVectorCds = new RegionVector();
 
 
+	        			 HashMap<String,RegionVector> proteins = new HashMap<String,RegionVector>();
 
 
 			        	transcript = new Transcript(attributes.get("transcript_id"),attributes.get("transcript_name"), Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),
-			        				attributes.get("gene_id"), exonsHM, regionVectorExons,regionVectorCds);
+			        				attributes.get("gene_id"), exonsHM, regionVectorExons,proteins);
 
 			        	Region r = new Region(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
 
@@ -112,12 +106,12 @@ public class parserGTF {
 
 			        		HashMap<String, Transcript> transcriptsHM= new HashMap<String, Transcript>();
 		    				RegionVector regionVectorTranscripts=  new RegionVector();
-		    				HashMap<String, Protein> proteins = new HashMap<String, Protein>();
+		    				HashMap<String, Protein> proteinss = new HashMap<String, Protein>();
 
 					        	gene= new Gene(attributes.get("gene_id"), attributes.get("gene_name"), tokenizedRow[0],
 					        				 		Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),
 					        				 		attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6],
-					        				 		transcriptsHM, regionVectorTranscripts, proteins);
+					        				 		transcriptsHM, regionVectorTranscripts, proteinss);
 
 					        	//gene = new Gene(attributes.get("gene_id"), attributes.get("gene_name"),tokenizedRow[0], Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),  attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6], transcriptIds, rv1, rv2);
 						        genes.put(gene.getId(), gene);
@@ -166,12 +160,12 @@ public class parserGTF {
 
 				        	 HashMap<String, Exon> exonsHM = new HashMap<String,Exon>();
 		        			 RegionVector regionVectorExons = new RegionVector();
-		        			 RegionVector regionVectorCds = new RegionVector();
 
 
+		        			 HashMap<String,RegionVector> proteins = new HashMap<String,RegionVector>();
 
 				        	transcript = new Transcript(attributes.get("transcript_id"),attributes.get("transcript_name"), Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),
-				        				attributes.get("gene_id"), exonsHM, regionVectorExons, regionVectorCds);
+				        				attributes.get("gene_id"), exonsHM, regionVectorExons, proteins);
 
 				        	Region r = new Region(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
 				        	genes.get(attributes.get("gene_id")).getTranscripts().put(attributes.get("transcript_id"), transcript);
@@ -220,12 +214,12 @@ public class parserGTF {
 
 				        	 HashMap<String, Exon> exonsHM = new HashMap<String,Exon>();
 		        			 RegionVector regionVectorExons = new RegionVector();
-		        			 RegionVector regionVectorCds = new RegionVector();
 
+		        			 HashMap<String,RegionVector> proteins = new HashMap<String,RegionVector>();
 
 
 				        	transcript = new Transcript(attributes.get("transcript_id"),attributes.get("transcript_name"), Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),
-				        				attributes.get("gene_id"), exonsHM, regionVectorExons, regionVectorCds);
+				        				attributes.get("gene_id"), exonsHM, regionVectorExons, proteins);
 
 				        	Region r = new Region(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
 				        	genes.get(attributes.get("gene_id")).getTranscripts().put(attributes.get("transcript_id"), transcript);
@@ -239,26 +233,35 @@ public class parserGTF {
 
 				        }
 
+		        		if(genes.get(attributes.get("gene_id")).getTranscripts().get(attributes.get("transcript_id")).getProteins().containsKey(attributes.get("protein_id"))){
+			        		genes.get(attributes.get("gene_id")).getTranscripts().get(attributes.get("transcript_id")).getProteins().get(attributes.get("protein_id")).getVector().add(c);
+
+		        		}else{
+		        			genes.get(attributes.get("gene_id")).getTranscripts().get(attributes.get("transcript_id")).getProteins().put(attributes.get("protein_id"), new RegionVector());
+			        		genes.get(attributes.get("gene_id")).getTranscripts().get(attributes.get("transcript_id")).getProteins().get(attributes.get("protein_id")).getVector().add(c);
+
+		        		}
 
 			        	genes.get(attributes.get("gene_id")).getProteins().put(attributes.get("protein_id"), protein);
 		        		genes.get(attributes.get("gene_id")).getProteins().get(attributes.get("protein_id")).getRegionVectorCds().getVector().add(c);
-		        		genes.get(attributes.get("gene_id")).getTranscripts().get(attributes.get("transcript_id")).getRegionVectorCds().getVector().add(c);
+
 
 
 		        		//add to exons
 		        		genes.get(attributes.get("gene_id")).getTranscripts().get(attributes.get("transcript_id")).getExons().get(attributes.get("exon_number")).getCDS().getVector().add(c);
 
 		        		if (genes.get(attributes.get("gene_id")).getCds().containsKey(attributes.get("protein_id"))){
-		        			
-		        			
-		        			genes.get(attributes.get("gene_id")).getCds().get(attributes.get("protein_id")).getVector().add(c); 
-		        			
+
+
+		        			genes.get(attributes.get("gene_id")).getCds().get(attributes.get("protein_id")).getVector().add(c);
+
 		        		}else{
-		        			RegionVector rv= new RegionVector(); 
-		        			rv.getVector().add(c); 
+		        			RegionVector rv= new RegionVector();
+		        			rv.getVector().add(c);
 		        			genes.get(attributes.get("gene_id")).getCds().put(attributes.get("protein_id"), rv);
 		        		}
-		        		
+
+
 
 
 
@@ -283,11 +286,8 @@ public class parserGTF {
 
 			Runner.annotation.setGenes(genes);
 
-			System.out.println("Done");
 
-			Utilities.printGenes(genes);
-			//genes.keySet();
-			//RegionVector.merge(Runner.annotation.getGenes().values()..getCds());
+
 
 
 		} catch (IOException e) {

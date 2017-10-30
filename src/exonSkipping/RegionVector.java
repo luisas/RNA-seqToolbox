@@ -10,14 +10,10 @@ public class RegionVector {
 
 
 
-
 	public RegionVector() {
 		super();
-		// TODO Auto-generated constructor stub
-		this.vector = new Vector();
+		this.vector = new Vector<Region>();
 	}
-
-
 
 
 	public RegionVector( Vector<Region> vector) {
@@ -26,19 +22,14 @@ public class RegionVector {
 
 	}
 
+
 	public Region getFirst(){
 
 		Collections.sort(this.vector, comparator);
 
 		return this.vector.firstElement();
 
-
 	}
-
-
-
-
-
 
 
 
@@ -71,32 +62,6 @@ public class RegionVector {
 	}
 
 
-
-
-
-	public RegionVector getOnCds(RegionVector CDS){
-		RegionVector rv = new RegionVector();
-
-		Collections.sort(this.vector, comparator);
-		Collections.sort(CDS.vector, comparator);
-
-		for(Region r : this.vector){
-			for(Region cds: CDS.getVector()){
-
-					if(cds.getStart() <= r.getStart() && cds.getEnd() >= r.getEnd() ){
-
-						rv.getVector().add(r);
-
-					}
-
-
-			}
-
-		}
-
-		return rv;
-
-	}
 
 	public RegionVector merge() {
 		Vector<Region> v = this.vector;
@@ -151,27 +116,24 @@ public class RegionVector {
 	    }
 	};
 
-	 // use the comparator as much as u want
 
 
 
 	public RegionVector inverse(){
 
 		Vector<Region> reverse = new Vector<Region>();
-		//int x1 = Runner.annotation.getGeneById(this.geneId).getStart();
-		//int x3= Runner.annotation.getGeneById(this.geneId).getStart();
+
 		Region intron;
 
 		RegionVector merged = this.merge();
 		Collections.sort(vector, comparator);
-		//System.out.println(Collections.singletonList(this.vector));
+
 		int x1= Integer.MAX_VALUE;
 		this.vector.firstElement().getStart();
 
-		//angenommen die sind sortiert
 		for (Region r : merged.getVector()) {
 
-			//nop exon at beginning
+
 			int x2 = r.getStart();
 
 			if(x2>x1){
@@ -182,22 +144,16 @@ public class RegionVector {
 
 				x1= r.getEnd();
 			}
-			//exon at beginning
-
-
 
 		}
 
-
 		RegionVector rv = new RegionVector(reverse);
-
 		return rv;
 	}
 
 
+	//TODO
 	public RegionVector substract(RegionVector first, RegionVector second){
-
-
 
 		return null;
 	}
@@ -216,12 +172,5 @@ public class RegionVector {
 	public void setVector(Vector<Region> vector) {
 		this.vector = vector;
 	}
-
-
-
-
-
-
-
 
 }

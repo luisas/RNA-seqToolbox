@@ -1,7 +1,7 @@
 package exonSkipping;
 
 import java.util.HashMap;
-import java.util.List;
+
 
 public class Transcript {
 
@@ -14,7 +14,7 @@ public class Transcript {
 	private HashMap<String,Exon> exons;
 	private RegionVector regionVectorExons;
 
-	private RegionVector regionVectorCds;
+	private HashMap<String,RegionVector> proteins;
 
 
 
@@ -26,7 +26,7 @@ public class Transcript {
 
 	public Transcript(String id, String name, int start, int stop,
 			String geneId, HashMap<String, Exon> exons,
-			RegionVector regionVectorExons, RegionVector regionVectorCds) {
+			RegionVector regionVectorExons, HashMap<String,RegionVector> proteins) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -35,7 +35,7 @@ public class Transcript {
 		this.geneId = geneId;
 		this.exons = exons;
 		this.regionVectorExons = regionVectorExons;
-		this.regionVectorCds = regionVectorCds;
+		this.proteins = proteins;
 	}
 
 
@@ -125,14 +125,16 @@ public class Transcript {
 	}
 
 
-	public RegionVector getRegionVectorCds() {
-		return regionVectorCds;
+	public HashMap<String, RegionVector> getProteins() {
+		return proteins;
 	}
 
 
-	public void setRegionVectorCds(RegionVector regionVectorCds) {
-		this.regionVectorCds = regionVectorCds;
+	public void setProteins(HashMap<String, RegionVector> proteins) {
+		this.proteins = proteins;
 	}
+
+
 
 
 

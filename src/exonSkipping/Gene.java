@@ -1,12 +1,10 @@
 package exonSkipping;
 
-import java.security.KeyStore.Entry;
-import java.util.ArrayList;
-import java.util.Arrays;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Vector;
+
 
 public class Gene {
 
@@ -26,14 +24,16 @@ public class Gene {
 	private HashMap<String, RegionVector> cds;
 
 
-	//private ArrayList<String> transcriptIds;
-	//private Vector<Region> cds;
-	//private Vector<Region> exon;
+	private int nprots;
+	private int ntrans;
 
 
 	public Gene() {
 		super();
 	}
+	
+	
+	
 
 
 	public Gene(String id, String name, String chr, int start, int stop,
@@ -61,47 +61,53 @@ public class Gene {
 
 
 		Set<ExonSkipping> result= new HashSet<ExonSkipping>();
+		Set<String> proteinId = new HashSet<String>();
 		ExonSkipping event;
 
 
-
-		// SECOND TRY
-
-		HashMap<String, RegionVector> cds = this.getCds();
+		HashMap<String, RegionVector> cds;
 		HashMap<Region, HashSet<String>> intron2cds = new HashMap<>();
 
+		//compute the intron2cds hashmap content
 		//intron2cds contains all the possible SV introns as key!
 
-		for(java.util.Map.Entry<String, RegionVector> e : cds.entrySet()){
+		for(String key: this.getTranscripts().keySet())
+		{
+			cds = this.getTranscripts().get(key).getProteins();
+
+			for(java.util.Map.Entry<String, RegionVector> e : cds.entrySet()){
+
+				for( Region r : e.getValue().inverse().getVector()){
 
 
-			for( Region r : e.getValue().inverse().getVector()){
+					Utilities.update(intron2cds, r, e.getKey());
 
-
-				Utilities.update(intron2cds, r, e.getKey());
+				}
 
 			}
 
 		}
 
 
-		Set<String> SV = new HashSet<String>();
+		Set<String> SV  = new HashSet<String>();
 		Set<String> WT_start = new HashSet<String>();
 		Set<String> WT_stop= new HashSet<String>();
 		Set<String> WT = new HashSet<String>();
 
 
-		int es = 0 ;
+		// For each Splicing Variant candidate (introns) is computed if they actually are splicing variants
+
 		for(Region candidate : intron2cds.keySet()){
 
-			event = new ExonSkipping();
 
-			//System.out.println("---------------------");
 			WT_start.clear();
 			WT_stop.clear();
 			WT.clear();
+
+			event = new ExonSkipping();
+
+
 			//Calculate SV -- all CDS containing the candidate
-			//System.out.println("-------------------!!-----------------");
 			SV = intron2cds.get(candidate);
 
 
@@ -120,7 +126,6 @@ public class Gene {
 
 			}
 
-			//System.out.println(WT_start.size());
 			//calculate WT
 			Set<String> intersection = new HashSet<String>(WT_start);
 			intersection.retainAll(WT_stop);
@@ -128,69 +133,64 @@ public class Gene {
 			WT = new HashSet<String>(intersection);
 			WT.removeAll(SV);
 
-			//System.out.println(WT_start.size());
-			//System.out.println(Arrays.asList(WT_stop));
 
-			//System.out.println(WT.size());
+			// If WT contains elements then we do have an exon skippig variant.
+			// Information of this are saved!
 
 			if(WT.size() > 0 ){
-				es++;
-				//Utilities.printRegion(candidate);
-				//intronSV.add(candidate);
-				event.setSv(candidate);
 
+				proteinId.addAll(SV);
+
+				// The candidate is an SV--> saved in event
+				event.setSv(candidate);
+				// saved its corresponding proteins IDs.
 				event.setSvCDSids(intron2cds.get(candidate));
 
 				for(String cdsId : WT){
 					event.getWtCDSids().add(cdsId);
-					//System.out.println(WT_start.size());
+
+					for(Region intron : this.getCds().get(cdsId).inverse().getVector()){
+						//NOT EFFICIENT !!! TO BE CHANGED
+						if(intron.getStart() >= candidate.getStart() && intron.getEnd() <= candidate.getEnd() && ! event.getWt().getVector().contains(intron)){
+							event.getWt().getVector().add(intron);
+							proteinId.addAll(WT);
+						}
+
+					}
 
 				}
 
-
-
+				event.updateMinMax();
 				result.add(event);
+			}
+		}
+
+		nprots = proteinId.size();
+		ntrans=calcNTranscripts(proteinId);
+
+		return result;
+	}
+
+
+	public int calcNTranscripts(Set<String> proteinId){
+		int number = 0 ;
+
+		for(String key : this.getTranscripts().keySet()){
+			for(String id: proteinId){
+
+				if(this.getTranscripts().get(key).getProteins().containsKey(id)){
+					 number ++;
+				}
+
 			}
 
 
 		}
-
-
-
-		//System.out.println(result);
-
-		return result;
-
-
+		return number;
 
 	}
 
 
-	public int getNumberTranscripts(){
-
-		return this.regionVectorTranscripts.getNumberRegion();
-		//return this.getRegionVectorTranscripts().getOnCds(this.transcripts.get(key).getRegionVectorCds()).merge().getVector().size();
-	}
-
-	public int getNumberCds(){
-		//System.out.println(this.getProteins().keySet());
-
-//		RegionVector rv =new RegionVector();
-//		for(String key: this.getProteins().keySet()){
-//			System.out.println(key+"\t"+ this.getProteins().get(key).getStart()+"-"+ this.getProteins().get(key).getStop());
-//			Region m = new Region(this.getProteins().get(key).getStart(), this.getProteins().get(key).getStop());
-//
-//			rv.getVector().add(m);
-//		}
-//
-//		System.out.println(rv.merge().getVector().size());
-
-
-
-		return this.getProteins().keySet().size();
-
-
-	}
 	public void updateStartStop(int start, int stop){
 
 		if(this.getStart() > start ) {
@@ -324,6 +324,26 @@ public class Gene {
 
 	public void setCds(HashMap<String, RegionVector> cds) {
 		this.cds = cds;
+	}
+
+
+	public int getNprots() {
+		return nprots;
+	}
+
+
+	public void setNprots(int nprots) {
+		this.nprots = nprots;
+	}
+
+
+	public int getNtrans() {
+		return ntrans;
+	}
+
+
+	public void setNtrans(int ntrans) {
+		this.ntrans = ntrans;
 	}
 
 
