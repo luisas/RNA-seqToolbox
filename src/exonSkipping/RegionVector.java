@@ -36,7 +36,7 @@ public class RegionVector {
 	}
 
 
-	public
+
 
 
 
@@ -175,7 +175,7 @@ public class RegionVector {
 			int x2 = r.getStart();
 
 			if(x2>x1){
-				intron = new Region(x1+1,x2-1);
+				intron = new Region(x1+1,x2);
 				x1= r.getEnd();
 				reverse.add(intron);
 			}else{

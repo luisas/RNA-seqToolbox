@@ -13,21 +13,24 @@ public class Region {
 
 	@Override
 	public int hashCode() {
-		// TODO Auto-generated method stub
-		return super.hashCode();
+	    final int prime = 31;
+	    int result = 1;
+	    result = prime * result + start;
+	    result = prime * result + end;
+	    return result;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		// TODO Auto-generated method stub
 		Region r = (Region) obj;
-		
+
 		if(this.start ==  r.start && this.end == r.end) {
-			return true; 
+			return true;
 		}else {
-			return false; 
+			return false;
 		}
-	
+
 	}
 
 	public int getLength(){

@@ -2,12 +2,25 @@ package exonSkipping;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 
 public class Utilities {
 
 
 
+	public static StringBuilder printID(Set<String> set){
+		StringBuilder svProts = new StringBuilder();
+		String prefix = "";
+		for(String cdsId : set ){
+			svProts.append(prefix);
+			svProts.append(cdsId);
+			prefix = "|";
+		}
+
+		return svProts;
+	}
 
 
 	public static void printGene(Gene gene) {
@@ -18,7 +31,7 @@ public class Utilities {
 		//System.out.println(Collections.singletonList(gene.getTranscriptIds()));
 		printTranscripts(gene);
 		//printRegionVector(gene.getRegionVectorTranscripts());
-		
+
 		//System.out.print( "\t" +"\t List of CDS");
 		//printVector(gene.getCds());
 
@@ -39,8 +52,8 @@ public class Utilities {
 	}
 	public static void printTranscript(Transcript transcript){
 		System.out.println("\t" +"\t"+transcript.getId()+"\t"+transcript.getStart()+ "\t"+transcript.getStop());
-		//Utilities.printRegionVector(transcript.getRegionVectorCds()); 
-		
+		//Utilities.printRegionVector(transcript.getRegionVectorCds());
+
 
 	}
 	public static void printGenes(HashMap<String, Gene> genes) {
@@ -85,6 +98,29 @@ public class Utilities {
 
 
 	}
+
+	public static void update(HashMap<Region, HashSet<String>> hm ,Region r, String otherId ){
+
+
+		if(hm.containsKey(r)){
+
+			hm.get(r).add(otherId);
+		}
+		else{
+
+			HashSet<String> hs = new HashSet<>();
+			hs.add(otherId);
+			hm.put(r, hs);
+		}
+
+	}
+
+	public static void printRegion(Region r ){
+
+		System.out.println(r.getStart() + "-" + r.getEnd());
+	}
+
+
 
 
 

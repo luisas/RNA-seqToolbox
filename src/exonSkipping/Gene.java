@@ -1,7 +1,11 @@
 package exonSkipping;
 
+import java.security.KeyStore.Entry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 
 public class Gene {
@@ -19,6 +23,7 @@ public class Gene {
 	private RegionVector regionVectorTranscripts;
 
 	private HashMap<String, Protein> proteins;
+	private HashMap<String, RegionVector> cds;
 
 
 	//private ArrayList<String> transcriptIds;
@@ -48,34 +53,113 @@ public class Gene {
 		this.transcripts = transcripts;
 		this.regionVectorTranscripts = regionVectorTranscripts;
 		this.proteins = proteins;
+		this.cds = new HashMap<String, RegionVector>();
 	}
 
 
-	public HashMap<Region,Vector<Region>> calculateExonSkipping(){
-
-		HashMap<Region,Vector<Region>> exonskipping = new HashMap();
+	public Set<ExonSkipping> calculateExonSkipping(){
 
 
+		Set<ExonSkipping> result= new HashSet<ExonSkipping>();
+		ExonSkipping event;
 
-		//filter for CDS region only
-		for(String key : this.transcripts.keySet()){
 
-			this.transcripts.get(key).getRegionVectorExons().getOnCds(this.transcripts.get(key).getRegionVectorCds()).merge().getVector().size();
+
+		// SECOND TRY
+
+		HashMap<String, RegionVector> cds = this.getCds();
+		HashMap<Region, HashSet<String>> intron2cds = new HashMap<>();
+
+		//intron2cds contains all the possible SV introns as key!
+
+		for(java.util.Map.Entry<String, RegionVector> e : cds.entrySet()){
+
+
+			for( Region r : e.getValue().inverse().getVector()){
+
+
+				Utilities.update(intron2cds, r, e.getKey());
+
+			}
 
 		}
 
-		//RegionVector exonsCDS = this.
+
+		Set<String> SV = new HashSet<String>();
+		Set<String> WT_start = new HashSet<String>();
+		Set<String> WT_stop= new HashSet<String>();
+		Set<String> WT = new HashSet<String>();
 
 
-		// find intron
+		int es = 0 ;
+		for(Region candidate : intron2cds.keySet()){
 
-		// see if there is WT
+			event = new ExonSkipping();
+
+			//System.out.println("---------------------");
+			WT_start.clear();
+			WT_stop.clear();
+			WT.clear();
+			//Calculate SV -- all CDS containing the candidate
+			//System.out.println("-------------------!!-----------------");
+			SV = intron2cds.get(candidate);
+
+
+			for(Region intron : intron2cds.keySet()){
+			//Calculate WT_start : CDS having introns beginning at start of candidate
+				if(intron.getStart() == candidate.getStart() && intron.getEnd() != candidate.getEnd() ){
+					WT_start.addAll(intron2cds.get(intron));
+
+
+				}
+			//Calculate WT_stop : CDS having introns ending at end candidate
+				if(intron.getEnd() == candidate.getEnd() && intron.getStart() != candidate.getStart()){
+					WT_stop.addAll(intron2cds.get(intron));
+
+				}
+
+			}
+
+			//System.out.println(WT_start.size());
+			//calculate WT
+			Set<String> intersection = new HashSet<String>(WT_start);
+			intersection.retainAll(WT_stop);
+
+			WT = new HashSet<String>(intersection);
+			WT.removeAll(SV);
+
+			//System.out.println(WT_start.size());
+			//System.out.println(Arrays.asList(WT_stop));
+
+			//System.out.println(WT.size());
+
+			if(WT.size() > 0 ){
+				es++;
+				//Utilities.printRegion(candidate);
+				//intronSV.add(candidate);
+				event.setSv(candidate);
+
+				event.setSvCDSids(intron2cds.get(candidate));
+
+				for(String cdsId : WT){
+					event.getWtCDSids().add(cdsId);
+					//System.out.println(WT_start.size());
+
+				}
 
 
 
+				result.add(event);
+			}
 
 
-		return exonskipping;
+		}
+
+
+
+		//System.out.println(result);
+
+		return result;
 
 
 
@@ -100,7 +184,6 @@ public class Gene {
 //		}
 //
 //		System.out.println(rv.merge().getVector().size());
-
 
 
 
@@ -231,6 +314,16 @@ public class Gene {
 
 	public void setProteins(HashMap<String, Protein> proteins) {
 		this.proteins = proteins;
+	}
+
+
+	public HashMap<String, RegionVector> getCds() {
+		return cds;
+	}
+
+
+	public void setCds(HashMap<String, RegionVector> cds) {
+		this.cds = cds;
 	}
 
 

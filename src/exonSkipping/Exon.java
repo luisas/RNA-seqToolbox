@@ -6,6 +6,7 @@ public class Exon {
 	private int start;
 	private int stop;
 	private String transcriptId;
+	private RegionVector CDS;
 
 
 	public Exon() {
@@ -20,6 +21,16 @@ public class Exon {
 		this.start = start;
 		this.stop = stop;
 		this.transcriptId = transcriptId;
+		this.CDS= new RegionVector();
+	}
+
+	public Exon(int number, int start, int stop, String transcriptId, RegionVector CDS) {
+		super();
+		this.number = number;
+		this.start = start;
+		this.stop = stop;
+		this.transcriptId = transcriptId;
+		this.CDS= CDS;
 	}
 
 
@@ -60,6 +71,16 @@ public class Exon {
 
 	public void setTranscriptId(String transcriptId) {
 		this.transcriptId = transcriptId;
+	}
+
+
+	public RegionVector getCDS() {
+		return CDS;
+	}
+
+
+	public void setCDS(RegionVector cDS) {
+		CDS = cDS;
 	}
 
 

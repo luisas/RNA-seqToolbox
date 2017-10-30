@@ -59,27 +59,16 @@ public class Runner {
 
 			Iterator it = annotation.getGenes().entrySet().iterator();
 		    while (it.hasNext()) {
+
 		        Map.Entry pair = (Map.Entry)it.next();
 				Gene myGene= annotation.getGeneById(pair.getKey().toString());
 
-				//for(String keyt: myGene.getTranscripts().keySet()){
 
-					//RegionVector introns = myGene.getTranscripts().get(keyt).getRegionVectorExons().inverse();
-
-
-
-
-
-
-
-					//Vector<Region> introns= rv.inverse();
-
-					//for(Region r: introns.getVector() ){
-
+				for(ExonSkipping es : myGene.calculateExonSkipping()){
 				        //ID
 						dos.print(pair.getKey().toString() +"\t");
-						System.out.println(pair.getKey().toString() +"\t");
-						System.out.println("----------");
+						//System.out.println(pair.getKey().toString() +"\t");
+						//System.out.println("----------");
 						//NAME
 						dos.print(myGene.getName()+"\t");
 						//CHR
@@ -90,32 +79,36 @@ public class Runner {
 						dos.print(myGene.getNumberCds()+ "\t");
 						//ntrans (number of annotated transcripts in the gene)
 						dos.print(myGene.getNumberTranscripts()+ "\t");
-						System.out.println(myGene.getNumberTranscripts() +"\t"+ myGene.getNumberCds());
-
+						//System.out.println(myGene.getNumberTranscripts() +"\t"+ myGene.getNumberCds());
 						//SV (the SV intron as start:end)
-						//dos.print(r.getStart()+":"+r.getEnd()+ "\t");
-						//System.out.println(Collections.singletonList(introns));
+						dos.print(es.getSv().getStart()+":"+es.getSv().getEnd()+ "\t");
+
+						//WT (the WT introns within the SV intron separated by | as start:end)
+
+						//WT prots (ids of the WT CDS-s, separated by |)
+						dos.print(Utilities.printID(es.getWtCDSids()) + "\t");
+						//SV prots (ids of the SV CDS-s, separated by |)
+						dos.print(Utilities.printID(es.getSvCDSids()) + "\t");
+
+
+						//min skipped exon the minimal number of skipped exons in any WT/SV pair
+
+						//max skipped exon the maximum number of skipped exons in any WT/SV pair
+
+						//min skipped bases the minimal number of skipped bases (joint length of skipped exons) in any WT/SV pair
+
+						//max skipped bases the maximum number of skipped bases (joint length of skipped exons) in any WT/SV pair
+
 
 						//Utilities.printVector(myGene.getExon());
 						dos.println();
-					//}
-				//}
-				//}
+
+				}
 
 
-				//WT (the WT introns within the SV intron separated by | as start:end)
 
-				//SV prots (ids of the SV CDS-s, separated by |)
 
-				//WT prots (ids of the WT CDS-s, separated by |)
 
-				//min skipped exon the minimal number of skipped exons in any WT/SV pair
-
-				//max skipped exon the maximum number of skipped exons in any WT/SV pair
-
-				//min skipped bases the minimal number of skipped bases (joint length of skipped exons) in any WT/SV pair
-
-				//max skipped bases the maximum number of skipped bases (joint length of skipped exons) in any WT/SV pair
 
 
 

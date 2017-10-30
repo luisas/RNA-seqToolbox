@@ -245,7 +245,20 @@ public class parserGTF {
 		        		genes.get(attributes.get("gene_id")).getTranscripts().get(attributes.get("transcript_id")).getRegionVectorCds().getVector().add(c);
 
 
+		        		//add to exons
+		        		genes.get(attributes.get("gene_id")).getTranscripts().get(attributes.get("transcript_id")).getExons().get(attributes.get("exon_number")).getCDS().getVector().add(c);
 
+		        		if (genes.get(attributes.get("gene_id")).getCds().containsKey(attributes.get("protein_id"))){
+		        			
+		        			
+		        			genes.get(attributes.get("gene_id")).getCds().get(attributes.get("protein_id")).getVector().add(c); 
+		        			
+		        		}else{
+		        			RegionVector rv= new RegionVector(); 
+		        			rv.getVector().add(c); 
+		        			genes.get(attributes.get("gene_id")).getCds().put(attributes.get("protein_id"), rv);
+		        		}
+		        		
 
 
 
