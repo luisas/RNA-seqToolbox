@@ -20,9 +20,6 @@ public class Gene {
 	private HashMap<String, Transcript> transcripts;
 	private RegionVector regionVectorTranscripts;
 
-	private HashMap<String, Protein> proteins;
-	private HashMap<String, RegionVector> cds;
-
 
 	private int nprots;
 	private int ntrans;
@@ -33,14 +30,26 @@ public class Gene {
 	}
 	
 	
-	
+	public Gene(String id, String name, String chr, int start, int stop,
+			String biotype, String source, String strand) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.chr = chr;
+		this.start = start;
+		this.stop = stop;
+		this.biotype = biotype;
+		this.source = source;
+		this.strand = strand;
+		this.transcripts = new HashMap<String, Transcript>();
+		this.regionVectorTranscripts = new RegionVector(); 
+	}
 
 
 	public Gene(String id, String name, String chr, int start, int stop,
 			String biotype, String source, String strand,
 			HashMap<String, Transcript> transcripts,
-			RegionVector regionVectorTranscripts,
-			HashMap<String, Protein> proteins) {
+			RegionVector regionVectorTranscripts) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -52,8 +61,6 @@ public class Gene {
 		this.strand = strand;
 		this.transcripts = transcripts;
 		this.regionVectorTranscripts = regionVectorTranscripts;
-		this.proteins = proteins;
-		this.cds = new HashMap<String, RegionVector>();
 	}
 
 
@@ -65,7 +72,7 @@ public class Gene {
 		ExonSkipping event;
 
 
-		HashMap<String, RegionVector> cds;
+		HashMap<String, RegionVector> cds= new HashMap<String, RegionVector>();
 		HashMap<Region, HashSet<String>> intron2cds = new HashMap<>();
 
 		//compute the intron2cds hashmap content
@@ -73,8 +80,13 @@ public class Gene {
 
 		for(String key: this.getTranscripts().keySet())
 		{
-			cds = this.getTranscripts().get(key).getProteins();
+			for(String keyp : this.getTranscripts().get(key).getProteins().keySet()) {
+				cds.put(keyp, this.getTranscripts().get(key).getProteins().get(keyp));
+				
+			}
+		
 
+		}
 			for(java.util.Map.Entry<String, RegionVector> e : cds.entrySet()){
 
 				for( Region r : e.getValue().inverse().getVector()){
@@ -86,7 +98,7 @@ public class Gene {
 
 			}
 
-		}
+		
 
 
 		Set<String> SV  = new HashSet<String>();
@@ -149,7 +161,7 @@ public class Gene {
 				for(String cdsId : WT){
 					event.getWtCDSids().add(cdsId);
 
-					for(Region intron : this.getCds().get(cdsId).inverse().getVector()){
+					for(Region intron : cds.get(cdsId).inverse().getVector()){
 						//NOT EFFICIENT !!! TO BE CHANGED
 						if(intron.getStart() >= candidate.getStart() && intron.getEnd() <= candidate.getEnd() && ! event.getWt().getVector().contains(intron)){
 							event.getWt().getVector().add(intron);
@@ -307,24 +319,7 @@ public class Gene {
 	}
 
 
-	public HashMap<String, Protein> getProteins() {
-		return proteins;
-	}
 
-
-	public void setProteins(HashMap<String, Protein> proteins) {
-		this.proteins = proteins;
-	}
-
-
-	public HashMap<String, RegionVector> getCds() {
-		return cds;
-	}
-
-
-	public void setCds(HashMap<String, RegionVector> cds) {
-		this.cds = cds;
-	}
 
 
 	public int getNprots() {

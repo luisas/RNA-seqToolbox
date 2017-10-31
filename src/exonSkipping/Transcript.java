@@ -23,6 +23,18 @@ public class Transcript {
 		// TODO Auto-generated constructor stub
 	}
 
+	public Transcript(String id, String name, int start, int stop,
+			String geneId) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.start = start;
+		this.stop = stop;
+		this.geneId = geneId;
+		this.exons = new HashMap<String, Exon>();
+		this.regionVectorExons = new RegionVector();
+		this.proteins = new HashMap<String, RegionVector>();
+	}
 
 	public Transcript(String id, String name, int start, int stop,
 			String geneId, HashMap<String, Exon> exons,
