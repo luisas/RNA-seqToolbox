@@ -1,6 +1,7 @@
 package exonSkipping;
 
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -9,6 +10,30 @@ import java.util.Vector;
 public class Utilities {
 
 
+	public  static StringBuilder prettySetRegionVector(Set<RegionVector> set){
+
+		RegionVector rv1 = new RegionVector();
+
+
+
+
+		for(RegionVector rv : set){
+			for(Region r: rv.getVector() ){
+				if(!rv1.getVector().contains(r)){
+					rv1.getVector().add(r);
+				}
+
+
+			}
+
+		}
+
+		Collections.sort(rv1.getVector(), RegionVector.comparator);
+
+
+		return prettyRegionVector(rv1);
+
+	}
 
 	public static StringBuilder prettyRegionVector(RegionVector rv){
 
@@ -133,7 +158,18 @@ public class Utilities {
 
 
 
+  public static boolean mySetContains(Set<RegionVector> set, Region r){
 
+	  for(RegionVector rv: set){
+
+		  if(rv.getVector().contains(r)){
+			  return true;
+		  }
+
+	  }
+	  return false;
+
+  }
 
 
 

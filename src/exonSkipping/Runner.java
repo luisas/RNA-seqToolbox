@@ -31,9 +31,22 @@ public class Runner {
 			CommandLineParser parser = new DefaultParser();
 			CommandLine cmd = parser.parse( options, args);
 
+			if (cmd.hasOption("o") && cmd.hasOption("gtf")){
 			String myFileName = cmd.getOptionValue("gtf");
 			outputfile= cmd.getOptionValue("o");
 			parserGTF.parse(myFileName);
+			}
+			else{
+				System.out.println();
+				System.out.println("The programm was invoked with wrong parameters");
+				System.out.println();
+				System.out.println("Correct Usage: ");
+				System.out.println("\t \t -gtf <path/to/your/gtf/file>");
+				System.out.println("\t \t -o <path/to/your/output/file>");
+
+				System.exit(0);
+
+			}
 
 
 		} catch (ParseException e) {
@@ -82,7 +95,8 @@ public class Runner {
 						dos.print(es.getSv().getStart()+":"+es.getSv().getEnd()+ "\t");
 
 						//WT (the WT introns within the SV intron separated by | as start:end)
-						dos.print( Utilities.prettyRegionVector(es.getWt())+"\t");
+						System.out.println(es.getWt());
+						dos.print( Utilities.prettySetRegionVector(es.getWt())+"\t");
 
 						//WT prots (ids of the WT CDS-s, separated by |)
 						dos.print(Utilities.printID(es.getWtCDSids()) + "\t");
@@ -103,9 +117,26 @@ public class Runner {
 						dos.print(es.getMax_skipped_bases()+ "\t");
 
 
+						//System.out.println("-----------");
+						//Utilities.printRegion(es.getSv());
+						//System.out.println(es.getWt().size());
+
 						dos.println();
 
+
+
 				}
+
+
+				Region a = new Region(1723871,1730388);
+				Region b = new Region(1730389,1730887);
+				RegionVector rv = new RegionVector();
+				rv.getVector().add(a);
+				rv.getVector().add(b);
+
+				rv.inverse(true);
+
+
 
 		        it.remove(); // avoids a ConcurrentModificationException
 

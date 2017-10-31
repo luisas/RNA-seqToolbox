@@ -28,8 +28,8 @@ public class Gene {
 	public Gene() {
 		super();
 	}
-	
-	
+
+
 	public Gene(String id, String name, String chr, int start, int stop,
 			String biotype, String source, String strand) {
 		super();
@@ -42,7 +42,7 @@ public class Gene {
 		this.source = source;
 		this.strand = strand;
 		this.transcripts = new HashMap<String, Transcript>();
-		this.regionVectorTranscripts = new RegionVector(); 
+		this.regionVectorTranscripts = new RegionVector();
 	}
 
 
@@ -82,9 +82,9 @@ public class Gene {
 		{
 			for(String keyp : this.getTranscripts().get(key).getProteins().keySet()) {
 				cds.put(keyp, this.getTranscripts().get(key).getProteins().get(keyp));
-				
+
 			}
-		
+
 
 		}
 			for(java.util.Map.Entry<String, RegionVector> e : cds.entrySet()){
@@ -98,7 +98,7 @@ public class Gene {
 
 			}
 
-		
+
 
 
 		Set<String> SV  = new HashSet<String>();
@@ -158,23 +158,52 @@ public class Gene {
 				// saved its corresponding proteins IDs.
 				event.setSvCDSids(intron2cds.get(candidate));
 
+				//System.out.println("--------");
+				//Utilities.printRegion(candidate);
+				//For each different proteinId of WildTypes
 				for(String cdsId : WT){
+
+					//The id is saved into the exonSkipping event
 					event.getWtCDSids().add(cdsId);
 
+					//System.out.println(cdsId);
+
+					RegionVector rv = new RegionVector();
+
+					//cds.get(id) contains exon informations! Here interested in introns.
+					// for each intron of the WT
 					for(Region intron : cds.get(cdsId).inverse().getVector()){
 						//NOT EFFICIENT !!! TO BE CHANGED
-						if(intron.getStart() >= candidate.getStart() && intron.getEnd() <= candidate.getEnd() && ! event.getWt().getVector().contains(intron)){
-							event.getWt().getVector().add(intron);
-							proteinId.addAll(WT);
+
+
+						// if the intron is inbetween the start and end of the SV (not at the same time)
+						if(intron.getStart() >= candidate.getStart() && intron.getEnd() <= candidate.getEnd()){
+
+							if(!(intron.getStart() == candidate.getStart() && intron.getEnd() == candidate.getEnd())){
+								rv.getVector().add(intron);
+							}
+
 						}
 
 					}
+					if(rv.getVector().size()>0){
+						event.getWt().add(rv);
+
+
+						//Utilities.printRegionVector(rv);
+
+
+
+					}
+
 
 				}
 
-				event.updateMinMax();
+				proteinId.addAll(WT);
+				event.calcMinMax();
 				result.add(event);
 			}
+
 		}
 
 		nprots = proteinId.size();

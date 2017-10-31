@@ -8,35 +8,35 @@ import java.util.StringTokenizer;
 
 
 public class parserGTF {
-	
+
 	static HashMap<String, Gene> genes = new HashMap<String, Gene>();
 
 
 
 	public static void addGene(String tokenizedRow[],HashMap<String, String> attributes ) {
-		
+
     		Gene gene= new Gene(attributes.get("gene_id"), attributes.get("gene_name"), tokenizedRow[0],
 		 		Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),
 		 		attributes.get("gene_biotype"), tokenizedRow[1], tokenizedRow[6]);
 
     		genes.put(gene.getId(), gene);
-		
-		
+
+
 	}
-	
+
 	public static void addTranscript(String tokenizedRow[],HashMap<String, String> attributes) {
     		Transcript transcript = new Transcript(attributes.get("transcript_id"),attributes.get("transcript_name"), Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]),
 				attributes.get("gene_id"));
 
     		Region r = new Region(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
-    		
+
          genes.get(attributes.get("gene_id")).getTranscripts().put(attributes.get("transcript_id"), transcript);
     		genes.get(attributes.get("gene_id")).getRegionVectorTranscripts().getVector().add(r);
     		genes.get(attributes.get("gene_id")).updateStartStop(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
-    		
-		
+
+
 	}
-	
+
 	public static void addExon(String tokenizedRow[],HashMap<String, String> attributes) {
 
     	Exon exon= new Exon(Integer.parseInt(attributes.get("exon_number")), Integer.parseInt(tokenizedRow[3]),Integer.parseInt(tokenizedRow[4]));
@@ -47,29 +47,29 @@ public class parserGTF {
 	genes.get(attributes.get("gene_id")).getTranscripts().get(attributes.get("transcript_id")).updateStartStop(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
 
 
-		
+
 	}
-	
+
 	public static void addCds(String tokenizedRow[],HashMap<String, String> attributes) {
-		
+
 		Region c= new Region(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
 
 		if(!genes.get(attributes.get("gene_id")).getTranscripts().get(attributes.get("transcript_id")).getProteins().containsKey(attributes.get("protein_id"))) {
-		
-			RegionVector rv = new RegionVector(); 
+
+			RegionVector rv = new RegionVector();
 			rv.getVector().add(c);
 			genes.get(attributes.get("gene_id")).getTranscripts().get(attributes.get("transcript_id")).getProteins().put(attributes.get("protein_id"),rv);
 
 		}else {
-			
+
 			genes.get(attributes.get("gene_id")).getTranscripts().get(attributes.get("transcript_id")).getProteins().get(attributes.get("protein_id")).getVector().add(c);
 		}
-		
-		
+
+
 		genes.get(attributes.get("gene_id")).updateStartStop(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
 		genes.get(attributes.get("gene_id")).getTranscripts().get(attributes.get("transcript_id")).updateStartStop(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
 	}
-		
+
 
 	public static void parse(String filename) {
 
@@ -107,7 +107,10 @@ public class parserGTF {
 			        		}
 			        		else {
 
-			        			attributes.put(defaultTokenizer.nextToken(), defaultTokenizer.nextToken().replaceAll("[\";]",""));
+			        			String key = defaultTokenizer.nextToken();
+			        			if(defaultTokenizer.hasMoreTokens()){
+			        				attributes.put(key, defaultTokenizer.nextToken().replaceAll("[\";]",""));
+			        			}
 			        		}
 
 			        }
@@ -132,10 +135,10 @@ public class parserGTF {
 			        		addGene(tokenizedRow, attributes);
 
 			        	}
-			        	
-			        
+
+
 			        	addTranscript(tokenizedRow, attributes);
-			        	
+
 			        }
 			  //----------------EXON
 			        else if(tokenizedRow[2].equals("exon")) {
@@ -152,17 +155,17 @@ public class parserGTF {
 			        	}
 
 			        	addExon(tokenizedRow, attributes);
-			        	
-			     
+
+
 			        	}
-			        
+
 
 
 
 
 		  //--------------------------CDS
 
-			        
+
 			        else if(tokenizedRow[2].equals("CDS")) {
 
 
@@ -177,7 +180,7 @@ public class parserGTF {
 
 			        		addCds(tokenizedRow, attributes);
 
-		        }	
+		        }
 
 
 

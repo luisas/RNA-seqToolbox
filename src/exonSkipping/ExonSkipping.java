@@ -7,7 +7,7 @@ public class ExonSkipping {
 
 
 	private Region sv;
-	private RegionVector wt;
+	private Set<RegionVector> wt;
 	private Set<String> svCDSids;
 	private Set<String> wtCDSids;
 	private int min_skipped_exon;
@@ -22,7 +22,7 @@ public class ExonSkipping {
 	public ExonSkipping() {
 		super();
 		// TODO Auto-generated constructor stub
-		this.wt = new RegionVector();
+		this.wt = new HashSet<RegionVector>();
 		this.svCDSids = new HashSet<String>();
 		this.wtCDSids = new HashSet<String>();
 		min_skipped_exon = Integer.MAX_VALUE;
@@ -33,7 +33,7 @@ public class ExonSkipping {
 
 
 
-	public ExonSkipping(Region sv, RegionVector wt) {
+	public ExonSkipping(Region sv, Set<RegionVector> wt) {
 		super();
 		this.sv = sv;
 		this.wt = wt;
@@ -47,7 +47,7 @@ public class ExonSkipping {
 
 
 
-	public ExonSkipping(Region sv, RegionVector wt, Set<String> svCDSids,
+	public ExonSkipping(Region sv, Set<RegionVector> wt, Set<String> svCDSids,
 			Set<String> wtCDSids) {
 		super();
 		this.sv = sv;
@@ -58,34 +58,57 @@ public class ExonSkipping {
 
 
 
-	public  void updateMinMax(){
-
-		// compute min
-		int min = this.getMin_skipped_exon();
-		int max = this.getMax_skipped_exon();
+	public void calcMinMax(){
 
 
+		int max = Integer.MIN_VALUE;
+		int min = Integer.MAX_VALUE;
+		int min_skipped_bases= Integer.MAX_VALUE;
+		int max_skipped_bases= Integer.MIN_VALUE;
+		int skippedExonNr;
+		int exon_length = 0;
 
-		int skippedExonNr= this.getWt().getNumberRegion() -1;
 
-		if(skippedExonNr < min){
-			this.setMin_skipped_exon(skippedExonNr);
-		}
-		// compute max
-		if(skippedExonNr > max){
+		Region r = new Region(1723871,1730887);
 
-			this.setMax_skipped_exon(skippedExonNr);
-		}
+
+		if(this.getSv().equals(r)){System.out.println("AAA");}
 
 
 
-		// compute min & max bases
-		int min_skipped_bases= this.getMin_skipped_bases();
-		int max_skipped_bases= this.getMax_skipped_bases();
-		int exon_length;
-		for(Region exon: this.getWt().inverse().getVector()){
+		for(RegionVector rv : this.getWt()){
+			exon_length = 0;
 
-			exon_length = exon.getEnd()-exon.getStart() +1;
+			//System.out.println(Utilities.prettyRegionVector(rv));
+			
+			RegionVector exons = rv.inverse();
+			skippedExonNr= exons.getNumberRegion();
+			if(this.getSv().equals(r)){
+			System.out.println("---------------------------------------------------------");
+			Utilities.printRegionVector(exons);
+			System.out.println("....");
+			Utilities.printRegionVector(rv);
+			System.out.println(exons.getNumberRegion());
+			}
+
+
+			if(skippedExonNr < min){
+				min= skippedExonNr;
+
+			}
+			// compute max
+			if(skippedExonNr > max){
+				max= skippedExonNr;
+
+			}
+
+			for(Region exon: exons.getVector()){
+
+				exon_length += exon.getEnd()-exon.getStart() +1;
+
+
+
+			}
 
 			if(exon_length<min_skipped_bases){
 				min_skipped_bases = exon_length;
@@ -94,7 +117,14 @@ public class ExonSkipping {
 				max_skipped_bases = exon_length;
 			}
 
+
+
 		}
+
+
+		this.setMin_skipped_exon(min);
+		this.setMax_skipped_exon(max);
+
 		this.setMin_skipped_bases(min_skipped_bases);
 		this.setMax_skipped_bases(max_skipped_bases);
 	}
@@ -107,12 +137,21 @@ public class ExonSkipping {
 	public void setSv(Region sv) {
 		this.sv = sv;
 	}
-	public RegionVector getWt() {
+
+
+
+	public Set<RegionVector> getWt() {
 		return wt;
 	}
-	public void setWt(RegionVector wt) {
+
+
+
+	public void setWt(Set<RegionVector> wt) {
 		this.wt = wt;
 	}
+
+
+
 	public Set<String> getSvCDSids() {
 		return svCDSids;
 	}

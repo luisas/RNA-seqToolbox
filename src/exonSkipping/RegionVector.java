@@ -109,13 +109,47 @@ public class RegionVector {
 
 
 
-	Comparator<Region> comparator = new Comparator<Region>() {
+	static Comparator<Region> comparator = new Comparator<Region>() {
 	    @Override
 	    public int compare(Region left, Region right) {
 	        return left.getStart() - right.getStart(); // use your logic
 	    }
 	};
 
+
+	public RegionVector inverse(boolean verbose){
+
+		Vector<Region> reverse = new Vector<Region>();
+
+		Region intron;
+
+		//RegionVector merged = this.merge();
+		Collections.sort(vector, comparator);
+
+		int x1= this.vector.firstElement().getStart();
+		
+
+		for (Region r : this.getVector()) {
+
+
+			int x2 = r.getStart();
+
+
+			if(x2>x1){
+			
+				intron = new Region(x1+1,x2);
+				x1= r.getEnd();
+				reverse.add(intron);
+			}else{
+
+				x1= r.getEnd();
+			}
+
+		}
+
+		RegionVector rv = new RegionVector(reverse);
+		return rv;
+	}
 
 
 
@@ -131,7 +165,7 @@ public class RegionVector {
 		int x1= Integer.MAX_VALUE;
 		this.vector.firstElement().getStart();
 
-		for (Region r : merged.getVector()) {
+		for (Region r :this.getVector()) {
 
 
 			int x2 = r.getStart();
@@ -173,4 +207,6 @@ public class RegionVector {
 		this.vector = vector;
 	}
 
+
 }
+
