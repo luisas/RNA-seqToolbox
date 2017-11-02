@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Vector;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -13,16 +14,22 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import plots.PlotUtils;
+
 public class Runner {
 
 	static Annotation annotation= new Annotation();
+	static Vector<Double> max_exons;
+	static Vector<Double> max_bases;
 
+	static String outputFolder;
+	public static String outputfile ;
 
 	public static void main(String[] args) {
 
 
 		//Read command line parameters
-		String outputfile = "";
+
 
 		try {
 			Options options = new Options();
@@ -63,6 +70,8 @@ public class Runner {
 			PrintWriter dos = new PrintWriter(fos);
 			dos.println("id"+"\t"+"symbol"+"\t"+"chr"+"\t"+"strand"+"\t"+"nprots"+"\t"+"ntrans"+"\t"+"SV"+"\t"+"WT"+"\t"+"WT_prots"+"\t"+"SV_prots"+"\t"+"min_skipped_exon"+"\t"+"max_skipped_exon"+"\t"+"min_skipped_bases"+"\t"+"max_skipped_bases");
 
+			max_exons = new Vector<Double>();
+			max_bases = new Vector<Double>();
 
 			Iterator<Entry<String, Gene>> it = annotation.getGenes().entrySet().iterator();
 		    while (it.hasNext()) {
@@ -95,7 +104,6 @@ public class Runner {
 						dos.print(es.getSv().getStart()+":"+es.getSv().getEnd()+ "\t");
 
 						//WT (the WT introns within the SV intron separated by | as start:end)
-						System.out.println(es.getWt());
 						dos.print( Utilities.prettySetRegionVector(es.getWt())+"\t");
 
 						//WT prots (ids of the WT CDS-s, separated by |)
@@ -109,12 +117,14 @@ public class Runner {
 
 						//max skipped exon the maximum number of skipped exons in any WT/SV pair
 						dos.print(es.getMax_skipped_exon()+ "\t");
+						max_exons.add((double) es.getMax_skipped_exon());
 
 						//min skipped bases the minimal number of skipped bases (joint length of skipped exons) in any WT/SV pair
 						dos.print(es.getMin_skipped_bases()+ "\t");
 
 						//max skipped bases the maximum number of skipped bases (joint length of skipped exons) in any WT/SV pair
 						dos.print(es.getMax_skipped_bases()+ "\t");
+						max_bases.add((double) es.getMax_skipped_bases());
 
 
 						//System.out.println("-----------");
@@ -128,15 +138,6 @@ public class Runner {
 				}
 
 
-				Region a = new Region(1723871,1730388);
-				Region b = new Region(1730389,1730887);
-				RegionVector rv = new RegionVector();
-				rv.getVector().add(a);
-				rv.getVector().add(b);
-
-				rv.inverse(true);
-
-
 
 		        it.remove(); // avoids a ConcurrentModificationException
 
@@ -146,6 +147,18 @@ public class Runner {
 		} catch (IOException e) {
 			System.out.println("Error Printing Tab Delimited File");
 		}
+
+		//retrieve outputfolder
+		String[] sl = outputfile.split("\\/");
+		outputFolder= outputfile.replace(sl[sl.length-1], "");
+
+		String nameSkippedExon="skipped_exons.jpg";
+		String nameSkippedBases="skipped_bases.jpg";
+
+		PlotUtils.getCumHist(max_exons, "Cumulative distribution of skipped Exons", "Skipped Exons", "Number Of Events", outputFolder+nameSkippedExon);
+		PlotUtils.getCumHist(max_bases, "Cumulative distribution of skipped Bases", "Skipped Bases", "Number Of Events", outputFolder+nameSkippedBases);
+
+
 
 	}
 
