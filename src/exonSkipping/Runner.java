@@ -13,16 +13,21 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import plots.LinePlot;
+import plots.Plot;
+
 public class Runner {
 
 	static Annotation annotation= new Annotation();
 
+	static String outputFolder;
+	public static String outputfile ;
 
 	public static void main(String[] args) {
 
 
 		//Read command line parameters
-		String outputfile = "";
+		
 
 		try {
 			Options options = new Options();
@@ -115,6 +120,19 @@ public class Runner {
 		} catch (IOException e) {
 			System.out.println("Error Printing Tab Delimited File");
 		}
+		
+		//retrieve outputfolder
+		String[] sl = outputfile.split("\\/");
+		outputFolder= outputfile.replace(sl[sl.length-1], "");
+
+		String nameSkippedExon="skipped_exons.jpg";
+		String nameSkippedBases="skipped_bases.jpg";
+		
+		LinePlot lp_exons = new LinePlot("Cumulative distribution of skipped Exons", "Skipped Exons", "Number Of Events");
+		lp_exons.plot(outputFolder+nameSkippedExon);
+		LinePlot lp_bases= new LinePlot("Cumulative distribution of skipped Bases", "Skipped Bases", "Number Of Events");
+		lp_bases.plot(outputFolder+nameSkippedBases);
+		
 
 	}
 

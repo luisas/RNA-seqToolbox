@@ -3,13 +3,25 @@ package plots;
 import java.io.File;
 import java.util.Vector;
 
+import exonSkipping.Runner;
+
 public class LinePlot extends Plot{
 	
 	
 	Vector<Double> x;
 	Vector<Double> y;
 	
-	void plot(String filename)
+	
+	public LinePlot(String title, String xlab, String ylab){
+		
+		super.setTitle(title);
+		super.setXlab(xlab);
+		super.setYlab(ylab);
+		
+	}
+	
+	
+	public void plot(String filename)
 	{
 		RExecutor r =new RExecutor(generateCommand(filename));
 		Thread t = new Thread(r);
@@ -37,15 +49,21 @@ public class LinePlot extends Plot{
 		command.append( String.format("plot(x,y,ann=F);"));
 		command.append( String.format("title(main=\"%s\", xlab=\"%s\",ylab=\"%s\");",super.title, super.xlab, super.ylab));
 		command.append( "dev.off()");
+		System.out.println(command);
 		return command.toString();
 	}
 
 
 
 
+
+
+
+
+
 	private File getTmpFile() {
 		// TODO Auto-generated method stub
-		return null;
+		return new File(Runner.outputfile );
 	}
 
 
