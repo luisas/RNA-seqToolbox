@@ -18,7 +18,7 @@ public class UtilsWebsite {
 
 
 
-	public static void generateTopGenes(Vector<String> geneids, String filename){
+	public static void generateTopGenes(Vector<String> geneids, String img1,String img2, String filename){
 
 		File html = new File(filename);
 
@@ -38,10 +38,16 @@ public class UtilsWebsite {
 
 
 			//---------CONTENT
-
+			
+			dos.println("<img src=\""+img1+"\"height=\"242\" width=\"242\">");
+			dos.println("<br>");
+			dos.println("<img src=\""+img1+"\"height=\"242\" width=\"242\">");
+			dos.println("<br>");
 			for(String id: geneids){
 				dos.println("<a href=\"http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g="+id+"\">"+ id+ "</a><br>");
 			}
+			
+			
 
 
 
@@ -81,12 +87,12 @@ public class UtilsWebsite {
 
 		System.out.println(header.getAbsolutePath());
 
-		String path = "/home/s/santus/git/RNA-seqToolbox/src/website/summary.html";
+		String path = "/Users/luisasantus/eclipse-workspace/RNA-seqToolbox/src/website/summary.html";
 		Vector ids = new Vector();
 		ids.add("id1");
 		ids.add("id2");
-
-		generateTopGenes(ids,path);
+		String img1= "/Users/luisasantus/Desktop/GoBi/img.jpeg";
+		generateTopGenes(ids,img1,img1 , path);
 
 
 

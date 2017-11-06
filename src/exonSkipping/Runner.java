@@ -118,6 +118,7 @@ public class Runner {
 						//max skipped exon the maximum number of skipped exons in any WT/SV pair
 						dos.print(es.getMax_skipped_exon()+ "\t");
 						max_exons.add((double) es.getMax_skipped_exon());
+						System.out.println(es.getMax_skipped_exon());
 
 						//min skipped bases the minimal number of skipped bases (joint length of skipped exons) in any WT/SV pair
 						dos.print(es.getMin_skipped_bases()+ "\t");
@@ -127,7 +128,7 @@ public class Runner {
 						max_bases.add((double) es.getMax_skipped_bases());
 
 
-						//System.out.println("-----------");
+						//System.out.println(es.getMax_skipped_bases());
 						//Utilities.printRegion(es.getSv());
 						//System.out.println(es.getWt().size());
 
@@ -155,6 +156,7 @@ public class Runner {
 		String nameSkippedExon="skipped_exons.jpg";
 		String nameSkippedBases="skipped_bases.jpg";
 
+	
 		PlotUtils.getCumHist(max_exons, "Cumulative distribution of skipped Exons", "Skipped Exons", "Number Of Events", outputFolder+nameSkippedExon);
 		PlotUtils.getCumHist(max_bases, "Cumulative distribution of skipped Bases", "Skipped Bases", "Number Of Events", outputFolder+nameSkippedBases);
 

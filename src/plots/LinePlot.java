@@ -57,12 +57,16 @@ public class LinePlot extends Plot{
 		command.append( String.format("x<-scan(\"%s\",nlines=1,skip=0);",tmp));
 		command.append( String.format("y<-scan(\"%s\",nlines=1,skip=1);",tmp));
 		command.append( String.format("plot(x,y,type=\"o\");"));
+		
+		//addLine
 		command.append( String.format("title(main=\"%s\", xlab=\"%s\",ylab=\"%s\");",super.title, super.xlab, super.ylab));
 		command.append( "dev.off()");
 		System.out.println(command);
 		return command.toString();
 	}
 
+	
+	
 
 
 	private File getTmpFile() {

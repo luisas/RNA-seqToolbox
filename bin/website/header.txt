@@ -1,0 +1,22 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>GoBi18</title>
+  <meta name="description" content="RNA-seqToolbox">
+  <meta name="author" content="Luisa Santus">
+
+
+</head>
+<body>
+
+<div class="rest">
+    <center>
+      <h2>Some Genes
+      </h2>
+      <p>A project developed during the GoBi praktikum at LMU/TUM.
+      </p>
+
+    </center>
+    <center>
