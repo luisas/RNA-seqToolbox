@@ -9,120 +9,175 @@ import java.io.RandomAccessFile;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
+import exonSkipping.Annotation;
+import exonSkipping.Transcript;
+
 public class GenomeSequenceExtractor {
-	
-	 File fasta; 
-	 File idx; 
-	 RandomAccessFile raf; 
-	 
+
+	 File fasta;
+	 File idx;
+	 static RandomAccessFile raf;
+	 static HashMap<String, long[]> mapIdx ;
 
 
-	
+
+
+
 	public GenomeSequenceExtractor(File fasta, File idx) {
 		super();
 		this.fasta = fasta;
 		this.idx = idx;
+		this.mapIdx = parseIdx();
 		try {
-			raf = new RandomAccessFile(fasta, "rw");
+			raf = new RandomAccessFile(fasta, "r");
 
 		} catch (FileNotFoundException e) {
 			System.out.println("Error initializing the raf");
 			e.printStackTrace();
-		} 
+		}
 	}
 
 	public static void main(String[] args) {
-		
-		GenomeSequenceExtractor ge = new GenomeSequenceExtractor(new File("/Users/luisasantus/Desktop/hola"), new File(""));
-	
-		System.out.println(ge.getSequence("1",3,5));
-		
+
+		GenomeSequenceExtractor ge = new GenomeSequenceExtractor(new File("/home/proj/biosoft/praktikum/genprakt/ReadSimulator/Homo_sapiens.GRCh37.75.dna.toplevel.fa"), new File("/home/proj/biosoft/praktikum/genprakt/ReadSimulator/Homo_sapiens.GRCh37.75.dna.toplevel.fa.fai" ));
+
+		//System.out.println(ge.getSequence("19",50015536,50029590));
+		ge.getSequence("19",50015536,50029590);
 	}
 
 
 
-	public String getSequence(String chr, int start, int end) {
-		
-		HashMap<String, Double[]> mapIdx = parseIdx();
-		Double[] array =  (Double[]) mapIdx.get(chr);
-		
-		//int entryLength = array[0].intValue();
-		int entryStart =array[1].intValue();
-		int lineLength = array[2].intValue();
-		int lineLengthwnl= array[3].intValue();
-		
-		
-		int s = entryStart + start -1 +  (start/lineLength); 
-		int lengthSeq= end - start + 1; 
+
+	public static String getTranscriptSequence(String gene, String transcript, Annotation annotation ){
+
+		Transcript t = annotation.getGenes().get(gene).getTranscripts().get(transcript);
+		String chr = annotation.getGenes().get(gene).getChr();
+		String strand = annotation.getGenes().get(gene).getStrand();
+		System.out.println("------------------------STRAND "+strand);
+
+
+		String sequence = getSequence(chr, t.getStart(), t.getStop());
+
+		return sequence;
+	}
+
+
+	public static String getSequence(String chr, int start, int end) {
+
+
+		long[] array =  (long[]) mapIdx.get(chr);
+		StringBuilder sb = new StringBuilder();
+
+		System.out.println("START: "+ start);
+		System.out.println("STOP: "+end);
+		long entryLength = array[0];
+		long entryStart =array[1];
+		long lineLength = array[2];
+		long lineLengthwnl= array[3];
+
+		System.out.println("entryLength  " +entryLength);
+		System.out.println("entryStart  " +entryStart);
+
+		long s = start + entryStart -1 + (start/lineLength);
+		System.out.println("LUISA " + s);
+
+		int lengthSeq= end - start + 1;
+
+
+		long rest = (start%lineLength);
+
+		System.out.println(rest);
 		//int length = lengthSeq + (lengthSeq/lineLength);
-		
 		try {
-			
-			int i = s-1; 
-			int limit = (s+lengthSeq-1);
+
+			long i = s;
+			long limit = (s+lengthSeq);
+
+			long count = rest-1;
 			while (i<limit) {
+
+				count ++;
+				//System.out.print(count+",");
 				raf.seek(i);
-				
+				//System.out.println((char )raf.readByte());
+
+				if(count == lineLengthwnl){
+					//byte b = raf.readByte();
+			        //System.out.print((char) b);
+			        count = 0;
+					//System.out.println();
+
+
+				}
+
 				if(((i+1)% (lineLengthwnl)) == 0) {
 					limit++;
+					//byte b = raf.readByte();
+
+			       // System.out.print((char) b);
 
 				}else {
 					byte b = raf.readByte();
-					System.out.print("i="+i+"---");
-			        System.out.println((char) b);
-					
+					sb.append((char)b);
+			        System.out.print((char) b);
+
 				}
 		        i++;
-				
+
+
 			}
-			
-			
+
+
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		return chr;
-		
+
+
+
+
+
+
+
+
+
+		return sb.toString();
+
 	}
-	
-	public HashMap<String, Double[]> parseIdx(){
-		HashMap<String,Double[]> map = new HashMap<String, Double[]>();
-		
+
+	public HashMap<String, long[]> parseIdx(){
+		HashMap<String,long[]> map = new HashMap<String, long[]>();
+
 		try (BufferedReader br = new BufferedReader(new FileReader(idx))) {
 
 			String currentLine;
-			
+
 			try {
 				while ((currentLine = br.readLine()) != null ) {
 					StringTokenizer defaultTokenizer = new StringTokenizer(currentLine);
 					int i = 0;
-					String key =""; 
-					Double[] a = new Double[4];
+
+					String key ="";
+					long[] a = new long[5];
 				    while (defaultTokenizer.hasMoreTokens())
 				    {
+
+
 				    		if(i==0) {
 				    			key=defaultTokenizer.nextToken();
 				    		}else {
-				    			a[i]=Double.parseDouble(defaultTokenizer.nextToken());
+				    			a[i-1]=Long.parseLong(defaultTokenizer.nextToken());
 				    		}
 				    		i++;
 				    }
-				    map.put(key, a); 
+				    map.put(key, a);
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}	
-				
+			}
+
 			} catch (FileNotFoundException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -131,12 +186,12 @@ public class GenomeSequenceExtractor {
 				e1.printStackTrace();
 			}
 
-		
-		return map; 
+
+		return map;
 	}
 
-	
-	
-	
-	
+
+
+
+
 }
