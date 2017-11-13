@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.StringTokenizer;
 
 import exonSkipping.Annotation;
+import exonSkipping.Region;
 import exonSkipping.Transcript;
 
 public class GenomeSequenceExtractor {
@@ -37,28 +38,48 @@ public class GenomeSequenceExtractor {
 		}
 	}
 
-	public static void main(String[] args) {
-
-		GenomeSequenceExtractor ge = new GenomeSequenceExtractor(new File("/home/proj/biosoft/praktikum/genprakt/ReadSimulator/Homo_sapiens.GRCh37.75.dna.toplevel.fa"), new File("/home/proj/biosoft/praktikum/genprakt/ReadSimulator/Homo_sapiens.GRCh37.75.dna.toplevel.fa.fai" ));
-
-		//System.out.println(ge.getSequence("19",50015536,50029590));
-		ge.getSequence("19",50015536,50029590);
-	}
+//	public static void main(String[] args) {
+//
+//		GenomeSequenceExtractor ge = new GenomeSequenceExtractor(new File("/home/proj/biosoft/praktikum/genprakt/ReadSimulator/Homo_sapiens.GRCh37.75.dna.toplevel.fa"), new File("/home/proj/biosoft/praktikum/genprakt/ReadSimulator/Homo_sapiens.GRCh37.75.dna.toplevel.fa.fai" ));
+//
+//		//System.out.println(ge.getSequence("19",50015536,50029590));
+//		ge.getSequence("19",50015536,50029590);
+//	}
 
 
 
 
 	public static String getTranscriptSequence(String gene, String transcript, Annotation annotation ){
+		boolean NL = true; 
+		int lineLengthwnl = 61; 
 
 		Transcript t = annotation.getGenes().get(gene).getTranscripts().get(transcript);
 		String chr = annotation.getGenes().get(gene).getChr();
 		String strand = annotation.getGenes().get(gene).getStrand();
-		System.out.println("------------------------STRAND "+strand);
+
+		System.out.println(t.getRegionVectorExons());
+
+		StringBuilder sb = new StringBuilder();
+		int countNL = 0 ; 
+		for (Region r : t.getRegionVectorExons().getVector()){
+
+			sb.append(getSequence(chr, r.getStart(), r.getEnd()));
+			
 
 
-		String sequence = getSequence(chr, t.getStart(), t.getStop());
+		}
+		
 
-		return sequence;
+
+		String sequenceString = sb.toString();
+		
+
+		if(strand.equals("-")){
+			sequenceString  = Utils.getComplement(sequenceString.toString());
+		}
+
+		String seq = sequenceString.replaceAll("(.{60})", "$1\n");
+		return seq;
 	}
 
 
@@ -68,25 +89,23 @@ public class GenomeSequenceExtractor {
 		long[] array =  (long[]) mapIdx.get(chr);
 		StringBuilder sb = new StringBuilder();
 
-		System.out.println("START: "+ start);
-		System.out.println("STOP: "+end);
+		//System.out.println("START: "+ start);
+		//System.out.println("STOP: "+end);
 		long entryLength = array[0];
 		long entryStart =array[1];
 		long lineLength = array[2];
 		long lineLengthwnl= array[3];
 
-		System.out.println("entryLength  " +entryLength);
-		System.out.println("entryStart  " +entryStart);
+		//System.out.println("entryLength  " +entryLength);
+		//System.out.println("entryStart  " +entryStart);
 
 		long s = start + entryStart -1 + (start/lineLength);
-		System.out.println("LUISA " + s);
 
 		int lengthSeq= end - start + 1;
 
 
 		long rest = (start%lineLength);
 
-		System.out.println(rest);
 		//int length = lengthSeq + (lengthSeq/lineLength);
 		try {
 
@@ -94,9 +113,12 @@ public class GenomeSequenceExtractor {
 			long limit = (s+lengthSeq);
 
 			long count = rest-1;
+			int countNL = 0 ;
 			while (i<limit) {
 
+
 				count ++;
+				countNL++;
 				//System.out.print(count+",");
 				raf.seek(i);
 				//System.out.println((char )raf.readByte());
@@ -105,13 +127,17 @@ public class GenomeSequenceExtractor {
 					//byte b = raf.readByte();
 			        //System.out.print((char) b);
 			        count = 0;
+					limit++;
+
+
+
 					//System.out.println();
 
 
-				}
-
-				if(((i+1)% (lineLengthwnl)) == 0) {
-					limit++;
+//				}
+//
+//				if(((i+1)% (lineLengthwnl)) == 0) {
+//					limit++;
 					//byte b = raf.readByte();
 
 			       // System.out.print((char) b);
@@ -119,14 +145,16 @@ public class GenomeSequenceExtractor {
 				}else {
 					byte b = raf.readByte();
 					sb.append((char)b);
-			        System.out.print((char) b);
+			        //System.out.print((char) b);
 
 				}
+
+
+
 		        i++;
 
 
 			}
-
 
 
 		} catch (IOException e) {

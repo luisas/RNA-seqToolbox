@@ -108,4 +108,26 @@ public class Utils {
 		return sb.toString();
 	}
 
+
+	public static String getComplement(String sequence){
+
+		StringBuilder sb = new StringBuilder();
+
+		for(int i = 0 ; i<sequence.length(); i++){
+
+			switch(sequence.charAt(i)){
+				case 'A':
+					sb.append("C");
+				case 'C':
+					sb.append("A");
+				case 'T':
+					sb.append("G");
+				case 'G':
+					sb.append("T");
+			}
+		}
+
+		return sb.toString();
+	}
+
 }
