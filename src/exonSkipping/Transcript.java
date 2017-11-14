@@ -49,6 +49,11 @@ public class Transcript {
 		this.proteins = proteins;
 	}
 
+	public int getLength(){
+
+		return this.stop -this.start +1 ;
+	}
+
 
 	public void updateStartStop(int start, int stop){
 

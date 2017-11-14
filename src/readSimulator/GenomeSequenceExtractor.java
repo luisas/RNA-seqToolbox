@@ -50,8 +50,8 @@ public class GenomeSequenceExtractor {
 
 
 	public static String getTranscriptSequence(String gene, String transcript, Annotation annotation ){
-		boolean NL = true; 
-		int lineLengthwnl = 61; 
+		boolean NL = true;
+		int lineLength = 60;
 
 		Transcript t = annotation.getGenes().get(gene).getTranscripts().get(transcript);
 		String chr = annotation.getGenes().get(gene).getChr();
@@ -60,25 +60,32 @@ public class GenomeSequenceExtractor {
 		System.out.println(t.getRegionVectorExons());
 
 		StringBuilder sb = new StringBuilder();
-		int countNL = 0 ; 
+		int countNL = 0 ;
 		for (Region r : t.getRegionVectorExons().getVector()){
 
 			sb.append(getSequence(chr, r.getStart(), r.getEnd()));
-			
+
 
 
 		}
-		
+
 
 
 		String sequenceString = sb.toString();
-		
+
 
 		if(strand.equals("-")){
 			sequenceString  = Utils.getComplement(sequenceString.toString());
 		}
 
-		String seq = sequenceString.replaceAll("(.{60})", "$1\n");
+		String seq;
+		if(NL){
+			seq=sequenceString.replaceAll("(.{"+lineLength+"})", "$1\n");
+
+
+		}else{
+			seq = sequenceString;
+		}
 		return seq;
 	}
 

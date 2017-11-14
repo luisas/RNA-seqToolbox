@@ -31,6 +31,15 @@ public class RegionVector {
 
 	}
 
+	public Region getLast(){
+
+		Collections.sort(this.vector, comparator);
+
+		return this.vector.lastElement();
+
+	}
+
+
 
 
 	public Comparator<Region> getComparator() {
@@ -85,7 +94,7 @@ public class RegionVector {
 					//overlap
 					//Region r = new Region(tempStart, region.getEnd());
 					//merged.add(r);
-					System.out.println(region.getEnd());
+					//System.out.println(region.getEnd());
 					tempStop= region.getEnd();
 				}
 				else {
@@ -127,7 +136,7 @@ public class RegionVector {
 		Collections.sort(vector, comparator);
 
 		int x1= this.vector.firstElement().getStart();
-		
+
 
 		for (Region r : this.getVector()) {
 
@@ -136,7 +145,7 @@ public class RegionVector {
 
 
 			if(x2>x1){
-			
+
 				intron = new Region(x1+1,x2);
 				x1= r.getEnd();
 				reverse.add(intron);

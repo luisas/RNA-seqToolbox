@@ -4,9 +4,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
+
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -14,9 +13,9 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+
 import exonSkipping.Annotation;
-import exonSkipping.Region;
-import exonSkipping.RegionVector;
+
 
 
 public class Runner {
@@ -25,7 +24,7 @@ public class Runner {
 
 
 	static int length;
-	static int frlength;
+	static double frlength;
 	static double SD;
 	static String readcounts;
 	static double mutationrate;
@@ -33,62 +32,44 @@ public class Runner {
 	static String fidx;
 	static String gtf;
 	static String od;
+	static int nMut;
 
 
 	public static void main(String[] args) {
 
+		//PARSE COMMAND LINE
 		readCommandLine(args);
 
 		//PARSE THE GTF FILE
 		exonSkipping.parserGTF.parse(gtf);
 
-		//PARSE THE READCOUNT FILE
-		HashMap<String,HashMap<String, Integer>> readCounts = Utils.parseReadCount(readcounts);
-
 		//Genome Sequence Extractor
 		GenomeSequenceExtractor ge = new GenomeSequenceExtractor(new File(fasta), new File(fidx));
 
-		//FOR EACH ENTRY IN THE READCOUNT FILE
-		for(String gene : readCounts.keySet()){
-			System.out.println(gene);
-				for(String t: readCounts.get(gene).keySet()){
+		// SAVE ALL FRAGMENTS AND READS
+		ReadCreator rc = new ReadCreator(GTFannotation, ge,length, frlength, SD, readcounts,mutationrate,  nMut);
 
-					//System.out.print(" \t \t");
-					int c = readCounts.get(gene).get(t);
-					//System.out.println(t +" : "+ c );
-
-					System.out.println("---------------------------------------------");
-					System.out.println(t);
-					System.out.println(ge.getTranscriptSequence(gene, t, GTFannotation));
+		//PRINT RESULT FILE
+		printInfos("read.mappinginfo", rc.getFragments());
 
 
+		//PRINT FASTAQ FILE
 
-					for(int i= 0 ; i < c; i++){
-						// each i should be a read
-						//System.out.print(" \t \t");
-						//System.out.print(" \t \t");
-						//System.out.println(i);
-					}
+//		HashMap<String,String> RW = new HashMap();
+//		RW.put("id1", "ABC");
+//		RW.put("id2", "ALJHLKH");
+//		printFASTAQ("fw.fastq", RW);
+//		printFASTAQ(" rw.fastq", BW);
 
-
-
-				}
-		}
-
-
-
-		//printFASTAQ("fw.fastq", "MYID", "ABCDEF");
-		//printFASTAQ(" rw.fastq", "ID", "ABNDBASNBH");
-		//printInfos("read.mappinginfo");
-
-
-
-		Utils.getRandomPos(10,10);
 
 	}
 
 
- public static void printInfos(String fname) {
+
+
+
+
+ public static void printInfos(String fname, HashMap<String,Fragment> fragments) {
 
 	 File outputfile= new File(od+fname);
 
@@ -96,8 +77,44 @@ public class Runner {
 
 			FileWriter fos = new FileWriter(outputfile);
 			PrintWriter dos = new PrintWriter(fos);
-			dos.println("readid"+"\t"+"chr_id"+"\t"+"gene_id"+"\t"+"transcript_id"+"\t"+"fw_regvec"+"\t"+"rw_regvec"+"\t"+"t_fw_regvec"+"\t"+"t_rw_regvec"+"\t"+"fw_mut"+"\t"+"rw_mut");
+			dos.println("readid"+"\t"+"chr_id"+"\t"+"gene_id"+"\t"+"transcript_id"+"\t"+"t_fw_regvec"+"\t"+"t_rw_regvec"+"fw_regvec"+"\t"+"rw_regvec"+"\t"+"\t"+"fw_mut"+"\t"+"rw_mut");
 
+
+			for(String key: fragments.keySet()) {
+
+				Fragment f = fragments.get(key);
+				//ID
+				dos.print(key+"\t");
+				//CHROMSOME
+				dos.print(f.getChr()+"\t");
+				//GENE ID
+				dos.print(f.getGeneID()+"\t");
+				//TRANSCRIPT ID
+				dos.print(f.getTranscriptID()+"\t");
+
+				// here retrieve the reads
+				Read RW = f.getRW();
+				Read FW = f.getFW();
+
+				// T RW
+				dos.print(RW.getTstart()+"-"+RW.getTstop()+"\t");
+				//T FW
+				dos.print(FW.getTstart()+"-"+FW.getTstop()+"\t");
+
+
+				//RW
+				dos.print(Utils.prettyRegionVector(RW.getGenPos())+"\t");
+
+				//FW
+				dos.print(Utils.prettyRegionVector(FW.getGenPos())+"\t");
+
+				//FW MUT
+				dos.print(Utils.prettyMutations(FW.getSequence().getPositions())+"\t");
+
+				//RW MUT
+				dos.print(Utils.prettyMutations(RW.getSequence().getPositions())+"\t");
+
+			}
 
 
 			fos.close();
@@ -113,7 +130,7 @@ public class Runner {
 
  }
 
-  public static void printFASTAQ(String fname, String id, String sequence) {
+  public static void printFASTAQ(String fname, HashMap<String,String> map) {
 
 	  //POSSIBLE ERROR : check if odends with / or not
 	  File outputfile= new File(od+fname);
@@ -122,15 +139,19 @@ public class Runner {
 
 			FileWriter fos = new FileWriter(outputfile);
 			PrintWriter dos = new PrintWriter(fos);
-			dos.println("@"+ id);
-			dos.println(sequence);
-			dos.println("+"+id);
+			for(String id: map.keySet()){
+				dos.println("@"+ id);
+				String sequence = map.get(id);
+				dos.println(sequence);
+				dos.println("+"+id);
+				StringBuilder qualityScore = new StringBuilder();
+				for(int i=0 ; i< sequence.length(); i++) {
+					qualityScore.append("~");
+				}
+				dos.println(qualityScore.toString());
 
-			StringBuilder qualityScore = new StringBuilder();
-			for(int i=0 ; i< sequence.length(); i++) {
-				qualityScore.append("~");
 			}
-			dos.println(qualityScore.toString());
+
 
 			fos.close();
 			dos.close();
@@ -173,6 +194,7 @@ public class Runner {
 				fidx= cmd.getOptionValue("fidx");
 				gtf= cmd.getOptionValue("gtf");
 				od= cmd.getOptionValue("od");
+				nMut = (int) ((mutationrate*length)/100);
 
 			}
 			else{

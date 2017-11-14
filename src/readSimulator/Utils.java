@@ -1,14 +1,18 @@
 package readSimulator;
 
 import exonSkipping.Annotation;
+import exonSkipping.Gene;
 import exonSkipping.Region;
 import exonSkipping.RegionVector;
+import exonSkipping.Transcript;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -109,6 +113,102 @@ public class Utils {
 	}
 
 
+	public static int getIntronBasesBeforePosition(int position, String geneID, String transcriptID, Annotation annotation){
+
+		Gene gene = annotation.getGenes().get(geneID);
+		Transcript transcript = gene.getTranscripts().get(transcriptID);
+
+		RegionVector transcripts = gene.getRegionVectorTranscripts();
+		RegionVector introns = transcripts.inverse();
+
+
+		int count = 0 ;
+		int countTranscript = 0 ;
+		int limit = position ;
+		int tstart= 0;
+		int tend = 0;
+
+	//	RegionVector previousTranscript = new RegionVector();
+
+		for(Region region: introns.getVector()){
+
+
+			tend=region.getStart();
+			int lengthRegion = tend-tstart+1;
+			countTranscript += lengthRegion;
+			//previousTranscript.getVector().add(new Region(tstart,tend));
+
+			while(countTranscript<limit){
+				count+= region.getLength();
+			}
+
+			tstart=region.getEnd();
+
+		}
+
+		return count;
+
+	}
+
+	public static RegionVector getIntronsInbetween(int start, int stop, String geneID, String transcriptID, Annotation annotation){
+
+		Gene gene = annotation.getGenes().get(geneID);
+
+		RegionVector transcripts = gene.getRegionVectorTranscripts();
+		RegionVector introns = transcripts.inverse();
+
+
+		RegionVector inbetweenIntrons= new RegionVector();
+
+		for(Region r : introns.getVector()){
+
+			if(r.getStart()>=start && r.getEnd()<=stop ){
+				inbetweenIntrons.getVector().add(r);
+			}
+
+		}
+
+		return inbetweenIntrons;
+
+
+
+	}
+
+	public static RegionVector getGenomicPositions(int start, int stop, String geneID, String transcriptID, Annotation annotation){
+
+		RegionVector rv = new RegionVector();
+
+		Gene gene = annotation.getGenes().get(geneID);
+		Transcript transcript = gene.getTranscripts().get(transcriptID);
+
+		RegionVector transcripts = gene.getRegionVectorTranscripts();
+
+		int Gstart = start + getIntronBasesBeforePosition(start, geneID, transcriptID, annotation);
+
+		//System.out.println("GSTARt" + Gstart);
+
+		int Gstop = stop + getIntronBasesBeforePosition(stop, geneID, transcriptID, annotation);
+		//System.out.println("GSTopt" + Gstop);
+
+		//GET introns inbetween
+		RegionVector inbetweenIntrons = getIntronsInbetween(Gstart, Gstop, geneID, transcriptID, annotation);
+		//RetrieveExons
+
+		System.out.println("Number regions" + inbetweenIntrons.getNumberRegion());
+		if(inbetweenIntrons.getNumberRegion() == 0){
+			rv.getVector().add(new Region(Gstart,Gstop));
+			return rv;
+		}
+		rv.getVector().add(new Region(Gstart,inbetweenIntrons.getFirst().getStart()));
+
+		RegionVector allButStartEndTranscripts = inbetweenIntrons.inverse();
+
+		rv.getVector().add(new Region(inbetweenIntrons.getLast().getEnd(),Gstop));
+
+		return rv;
+	}
+
+
 	public static String getComplement(String sequence){
 
 		StringBuilder sb = new StringBuilder();
@@ -124,6 +224,39 @@ public class Utils {
 					sb.append("G");
 				case 'G':
 					sb.append("T");
+			}
+		}
+
+		return sb.toString();
+	}
+
+
+	public static String prettyMutations(Set<Integer> set){
+
+		//Collections.sort(set);
+
+		return "a";
+
+
+
+	}
+
+	public static String getRevComplement(String sequence){
+
+		StringBuilder sb = new StringBuilder();
+
+
+		for(int i = 0 ; i<sequence.length(); i++){
+
+			switch(sequence.charAt(i)){
+				case 'A':
+					sb.insert(0,"C");
+				case 'C':
+					sb.insert(0,"A");
+				case 'T':
+					sb.insert(0,"G");
+				case 'G':
+					sb.insert(0,"T");
 			}
 		}
 
