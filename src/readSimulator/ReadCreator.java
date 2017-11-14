@@ -39,11 +39,7 @@ public class ReadCreator {
 
 		this.fragments = new HashMap<String,Fragment>();
 
-
 		calcReads();
-
-
-
 
 		}
 
@@ -54,13 +50,13 @@ public class ReadCreator {
 			HashMap<String,HashMap<String, Integer>> readCounts = Utils.parseReadCount(readcounts);
 
 
+			int idFragment = 0 ;
 			for(String gene : readCounts.keySet()){
-				System.out.println(gene);
-					for(String t: readCounts.get(gene).keySet()){
 
-						System.out.println("---------------------------------------------");
-						System.out.println(t);
-						//System.out.println(ge.getTranscriptSequence(gene, t, GTFannotation));
+					for(String t: readCounts.get(gene).keySet()){
+						System.out.println("TRANSCRIPT "+t);
+
+
 						Transcript transcript = GTFannotation.getGenes().get(gene).getTranscripts().get(t);
 						String chr = GTFannotation.getGenes().get(gene).getChr();
 
@@ -78,9 +74,6 @@ public class ReadCreator {
 
 						Utilities.printRegionVector(prova);
 
-
-
-
 						for(int id= 0 ; id < numberReads; id++){
 							//CALC FRAGMENT LENGTH
 							 int ndSample = (int) nd.sample();
@@ -91,8 +84,10 @@ public class ReadCreator {
 							 int Fend = startPosition+FL-1;
 
 							 //GET FRAGMENT SEQUENCE
-							 fragmentSequence = ge.getSequence(chr, startPosition, FL+startPosition-1);
+							 fragmentSequence = ge.getSequence(chr, startPosition,Fend);
 
+							 System.out.println("spos "+startPosition+ "     end "+Fend);
+							 //System.out.println("FragementSequence "+fragmentSequence);
 							 //GET FW READ SEQUENCE
 							 int startFW =  startPosition;
 							 int stopFW = startPosition+length;
@@ -111,26 +106,20 @@ public class ReadCreator {
 							 RegionVector genPosFW = Utils.getGenomicPositions( startFW, stopFW,  gene,  t,  GTFannotation);
 							 RegionVector genPosRW = Utils.getGenomicPositions( startRW, stopRW,  gene,  t,  GTFannotation);
 
+							 Read RW = new Read("+", startRW, stopRW, mRW,genPosRW);
+							 Read FW = new Read("-", startFW, stopFW, mFW,genPosFW);
 
 
-
-
-
-
-							// each i should be a read
-							//System.out.print(" \t \t");
-							//System.out.print(" \t \t");
-							//System.out.println(i);
+							 Fragment fragment = new Fragment(Integer.toString(idFragment), chr, gene, t, FW, RW);
+							 fragments.put(Integer.toString(idFragment), fragment);
 						}
 
 
 
 					}
+
+				idFragment++;
 			}
-
-
-
-
 
 
 

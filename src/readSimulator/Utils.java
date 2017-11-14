@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.concurrent.ThreadLocalRandom;
 
 
@@ -194,7 +195,7 @@ public class Utils {
 		RegionVector inbetweenIntrons = getIntronsInbetween(Gstart, Gstop, geneID, transcriptID, annotation);
 		//RetrieveExons
 
-		System.out.println("Number regions" + inbetweenIntrons.getNumberRegion());
+		//System.out.println("Number regions" + inbetweenIntrons.getNumberRegion());
 		if(inbetweenIntrons.getNumberRegion() == 0){
 			rv.getVector().add(new Region(Gstart,Gstop));
 			return rv;
@@ -231,13 +232,17 @@ public class Utils {
 	}
 
 
-	public static String prettyMutations(Set<Integer> set){
+	public static String prettyMutations(TreeSet<Integer> set){
 
 		//Collections.sort(set);
-
-		return "a";
-
-
+		StringBuilder sb = new StringBuilder();
+		String prefix = "";
+		for (Integer mut: set){
+			sb.append(prefix+mut);
+			prefix=",";
+		}
+		System.out.println("MUT "+sb.toString());
+		return sb.toString();
 
 	}
 

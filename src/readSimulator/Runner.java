@@ -17,6 +17,15 @@ import org.apache.commons.cli.ParseException;
 import exonSkipping.Annotation;
 
 
+/**
+ *
+ * @author santus
+ *
+ * TODO:
+ * FIX GENOME POS
+ * FIX MUT
+ *
+ */
 
 public class Runner {
 
@@ -53,13 +62,20 @@ public class Runner {
 		printInfos("read.mappinginfo", rc.getFragments());
 
 
-		//PRINT FASTAQ FILE
+		//RETRIEVE READ SEQUENCE INFO FROM FRAGMENTS HASHMAP
+		HashMap<String,String> FW = new HashMap<String,String>();
+		for(String key: rc.getFragments().keySet()){
+			FW.put(key, rc.getFragments().get(key).getFW().getSequence().getSequence());
+		}
+		HashMap<String,String> RW = new HashMap<String,String>();
+		for(String key: rc.getFragments().keySet()){
+			RW.put(key, rc.getFragments().get(key).getRW().getSequence().getSequence());
+		}
 
-//		HashMap<String,String> RW = new HashMap();
-//		RW.put("id1", "ABC");
-//		RW.put("id2", "ALJHLKH");
-//		printFASTAQ("fw.fastq", RW);
-//		printFASTAQ(" rw.fastq", BW);
+
+		//PRINT FASTAQ FILE
+		printFASTAQ("fw.fastq", FW);
+		printFASTAQ("rw.fastq", RW);
 
 
 	}
@@ -81,6 +97,8 @@ public class Runner {
 
 
 			for(String key: fragments.keySet()) {
+				
+				System.out.println("KEY: "+key); 
 
 				Fragment f = fragments.get(key);
 				//ID
