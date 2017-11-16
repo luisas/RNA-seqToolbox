@@ -131,7 +131,7 @@ public class parserGTF {
 
 			Runner.annotation.setGenes(genes);
 			readSimulator.Runner.GTFannotation.setGenes(genes);
-
+			readSimulator.Utils.annotation.setGenes(genes);
 
 
 

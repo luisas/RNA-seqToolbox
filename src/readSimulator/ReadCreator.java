@@ -5,13 +5,14 @@ import java.util.HashMap;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
 import exonSkipping.Annotation;
+import exonSkipping.Gene;
 import exonSkipping.RegionVector;
 import exonSkipping.Transcript;
 import exonSkipping.Utilities;
 
 public class ReadCreator {
 
-	private HashMap<String, Fragment> fragments;
+	private HashMap<Integer, Fragment> fragments;
 
 	private Annotation GTFannotation;
 	private GenomeSequenceExtractor ge;
@@ -37,7 +38,7 @@ public class ReadCreator {
 		this.mutationrate = mutationrate;
 		this.nMut = nMut;
 
-		this.fragments = new HashMap<String,Fragment>();
+		this.fragments = new HashMap<Integer,Fragment>();
 
 		calcReads();
 
@@ -51,74 +52,84 @@ public class ReadCreator {
 
 
 			int idFragment = 0 ;
-			for(String gene : readCounts.keySet()){
+			for(String geneID : readCounts.keySet()){
 
-					for(String t: readCounts.get(gene).keySet()){
+					for(String t: readCounts.get(geneID).keySet()){
 						System.out.println("TRANSCRIPT "+t);
 
-
-						Transcript transcript = GTFannotation.getGenes().get(gene).getTranscripts().get(t);
-						String chr = GTFannotation.getGenes().get(gene).getChr();
+						Gene gene = GTFannotation.getGenes().get(geneID);
+						Transcript transcript = gene.getTranscripts().get(t);
+						String chr = gene.getChr();
 
 						NormalDistribution nd = new NormalDistribution(frlength, SD);
 						int FL;
 						int startPosition;
-						int numberReads = readCounts.get(gene).get(t);
+						int numberReads = readCounts.get(geneID).get(t);
 						String fragmentSequence ="";
 						String readSequenceFW ="";
 						String readSequenceRW = "";
-						Utilities.printRegionVector(GTFannotation.getGenes().get(gene).getRegionVectorTranscripts());
+						//Utilities.printRegionVector(GTFannotation.getGenes().get(gene).getRegionVectorTranscripts());
 
 
-						RegionVector prova = Utils.getGenomicPositions(50010073, 50017566, gene, t, GTFannotation);
+						RegionVector prova = Utils.getGenomicRV(50010073, 50017566, geneID, t, GTFannotation);
 
 						Utilities.printRegionVector(prova);
 
+						System.out.println("Number Reads"+numberReads);
 						for(int id= 0 ; id < numberReads; id++){
 							//CALC FRAGMENT LENGTH
 							 int ndSample = (int) nd.sample();
+
 							 FL = Integer.max(length, ndSample);
 
+							 System.out.println("ND SAMPLE"+ndSample);
 							 //GET RANDOM START POSITION
-							 startPosition = Utils.getRandomPos(transcript.getLength(), FL);
-							 int Fend = startPosition+FL-1;
+							 startPosition = Utils.getRandomPos(transcript.getRegionVectorExons().getRegionsLength(), FL);
+							 int endPosition = startPosition+FL;
 
+							 System.out.println("fragment LENGTH : "+FL);
 							 //GET FRAGMENT SEQUENCE
-							 fragmentSequence = ge.getSequence(chr, startPosition,Fend);
+							 fragmentSequence = ge.getFragmentSequence(startPosition,endPosition,transcript,gene);
 
-							 System.out.println("spos "+startPosition+ "     end "+Fend);
-							 //System.out.println("FragementSequence "+fragmentSequence);
+							 System.out.println(fragmentSequence);
+
 							 //GET FW READ SEQUENCE
-							 int startFW =  startPosition;
-							 int stopFW = startPosition+length;
-							 readSequenceFW=ge.getSequence(chr, startFW, stopFW);
+							 int startFW =  0;
+							 int stopFW = length;
+							 readSequenceFW = fragmentSequence.substring(0, length);
+							 //readSequenceFW=ge.getReadSequence(startFW, stopFW,transcript,gene);
+							 //System.out.println("CHR:"+chr+" startFW"+startFW +"stopFW"+stopFW);
+							 System.out.println(readSequenceFW);
 
 							 //GET RW READ SEQUENCE
-							 int startRW = Fend-length+1;
-							 int stopRW=Fend;
-							 readSequenceRW=Utils.getRevComplement(ge.getSequence(chr, startRW,stopRW));
+							 int stopRW=FL;
+							 int startRW = stopRW-length;
+							 readSequenceRW= Utils.getRevComplement(fragmentSequence.substring(startRW, stopRW));
+							 System.out.println(readSequenceRW);
 
-							 //GET NUMBER MUTATIONS
-							 MutatedSeq mFW = new MutatedSeq(readSequenceFW,nMut);
-							 MutatedSeq mRW = new MutatedSeq(readSequenceRW,nMut);
+							 //GET MUTATED SEQUENCES
+							 MutatedSeq mFW = new MutatedSeq(readSequenceFW,mutationrate);
+							 MutatedSeq mRW = new MutatedSeq(readSequenceRW,mutationrate);
 
 							 //STORE READS
-							 RegionVector genPosFW = Utils.getGenomicPositions( startFW, stopFW,  gene,  t,  GTFannotation);
-							 RegionVector genPosRW = Utils.getGenomicPositions( startRW, stopRW,  gene,  t,  GTFannotation);
+							 RegionVector genPosFW = Utils.getGenomicRV( startFW+startPosition, stopFW+startPosition,  geneID,  t,  GTFannotation);
+							 RegionVector genPosRW = Utils.getGenomicRV( startRW+startPosition, stopRW+startPosition,  geneID,  t,  GTFannotation);
 
 							 Read RW = new Read("+", startRW, stopRW, mRW,genPosRW);
 							 Read FW = new Read("-", startFW, stopFW, mFW,genPosFW);
 
 
-							 Fragment fragment = new Fragment(Integer.toString(idFragment), chr, gene, t, FW, RW);
-							 fragments.put(Integer.toString(idFragment), fragment);
+							 //STORE FRAGEMENTS
+							 Fragment fragment = new Fragment(Integer.toString(idFragment), chr, geneID, t,startPosition,endPosition, FW, RW);
+							 fragments.put(idFragment, fragment);
+							 idFragment++;
+
 						}
 
 
 
 					}
 
-				idFragment++;
 			}
 
 
@@ -130,10 +141,10 @@ public class ReadCreator {
 
 
 
-	public HashMap<String, Fragment> getFragments() {
+	public HashMap<Integer, Fragment> getFragments() {
 		return fragments;
 	}
-	public void setFragments(HashMap<String, Fragment> fragments) {
+	public void setFragments(HashMap<Integer, Fragment> fragments) {
 		this.fragments = fragments;
 	}
 	public Annotation getGTFannotation() {
@@ -168,47 +179,18 @@ public class ReadCreator {
 	}
 
 
-
-
-
-
-
-
-
 	public String getReadcounts() {
 		return readcounts;
 	}
-
-
-
-
-
-
-
 
 
 	public void setReadcounts(String readcounts) {
 		this.readcounts = readcounts;
 	}
 
-
-
-
-
-
-
-
-
 	public double getMutationrate() {
 		return mutationrate;
 	}
-
-
-
-
-
-
-
 
 
 	public void setMutationrate(double mutationrate) {
@@ -216,32 +198,14 @@ public class ReadCreator {
 	}
 
 
-
-
-
-
-
-
-
 	public int getnMut() {
 		return nMut;
 	}
 
 
-
-
-
-
-
-
-
 	public void setnMut(int nMut) {
 		this.nMut = nMut;
 	}
-
-
-
-
 
 
 

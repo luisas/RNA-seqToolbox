@@ -41,6 +41,16 @@ public class RegionVector {
 
 
 
+	public int getRegionsLength(){
+
+
+		int tot = 0 ;
+		for(Region r : this.getVector()){
+			tot+=r.getLength();
+		}
+		return tot;
+
+	}
 
 	public Comparator<Region> getComparator() {
 		return comparator;

@@ -12,14 +12,15 @@ public class MutatedSeq {
 	private String sequence;
 	private TreeSet<Integer> positions = new TreeSet<Integer>();
 
-	int nMut ;
-	static Set<Character> na ;
+	double mutationRate;
+
+ static Set<Character> na ;
 
 
-	public MutatedSeq(String sequence, int nMut) {
+	public MutatedSeq(String sequence, double mutationRate) {
 		super();
 		this.sequence = sequence;
-		this.nMut = nMut;
+		this.mutationRate = mutationRate;
 
 		na = new HashSet<Character>();
 		na.add('A');
@@ -27,21 +28,35 @@ public class MutatedSeq {
 		na.add('G');
 		na.add('T');
 
-		if(sequence.length()<nMut){
-			System.out.println("Number of mutations higher than the length of the read itself!!!");
-			System.exit(0);
+//		if(sequence.length()<nMut){
+//			System.out.println("Number of mutations higher than the length of the read itself!!!");
+//			System.exit(0);
+//		}
+
+
+//		while(positions.size()<nMut){
+//
+//			int posMutation  = (int)(Math.random()*(sequence.length()-1) );
+//			sequence= mutate(sequence,posMutation,na);
+//			positions.add((int)(posMutation));
+//
+//
+//		}
+
+
+		Random r ;
+		for(int i = 0 ; i<sequence.length(); i++){
+			r = new Random();
+			double myRandom = r.nextInt(100);
+			if(myRandom<mutationRate){
+				sequence= mutate(sequence,i,na);
+				positions.add((int)(i));
+			}
 		}
-
-
-		while(positions.size()<nMut){
-
-			int posMutation  = (int)(Math.random()*(sequence.length()-1) );
-			sequence= mutate(sequence,posMutation,na);
-			positions.add((int)(posMutation));
-
+		if(positions.size()==0 ){
+			positions.add((int)(-1));
 
 		}
-
 		this.sequence = sequence;
 
 

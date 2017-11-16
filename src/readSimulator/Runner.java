@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.TreeSet;
 
 
 import org.apache.commons.cli.CommandLine;
@@ -46,6 +47,8 @@ public class Runner {
 
 	public static void main(String[] args) {
 
+
+
 		//PARSE COMMAND LINE
 		readCommandLine(args);
 
@@ -63,15 +66,16 @@ public class Runner {
 
 
 		//RETRIEVE READ SEQUENCE INFO FROM FRAGMENTS HASHMAP
-		HashMap<String,String> FW = new HashMap<String,String>();
-		for(String key: rc.getFragments().keySet()){
+		HashMap<Integer,String> FW = new HashMap<Integer,String>();
+		for(Integer key: rc.getFragments().keySet()){
 			FW.put(key, rc.getFragments().get(key).getFW().getSequence().getSequence());
 		}
-		HashMap<String,String> RW = new HashMap<String,String>();
-		for(String key: rc.getFragments().keySet()){
+		HashMap<Integer,String> RW = new HashMap<Integer,String>();
+		for(Integer key: rc.getFragments().keySet()){
 			RW.put(key, rc.getFragments().get(key).getRW().getSequence().getSequence());
 		}
 
+		System.out.println("SIZE "+rc.getFragments().size());
 
 		//PRINT FASTAQ FILE
 		printFASTAQ("fw.fastq", FW);
@@ -85,7 +89,7 @@ public class Runner {
 
 
 
- public static void printInfos(String fname, HashMap<String,Fragment> fragments) {
+ public static void printInfos(String fname, HashMap<Integer,Fragment> fragments) {
 
 	 File outputfile= new File(od+fname);
 
@@ -93,12 +97,12 @@ public class Runner {
 
 			FileWriter fos = new FileWriter(outputfile);
 			PrintWriter dos = new PrintWriter(fos);
-			dos.println("readid"+"\t"+"chr_id"+"\t"+"gene_id"+"\t"+"transcript_id"+"\t"+"t_fw_regvec"+"\t"+"t_rw_regvec"+"fw_regvec"+"\t"+"rw_regvec"+"\t"+"\t"+"fw_mut"+"\t"+"rw_mut");
+			dos.println("readid"+"\t"+"chr_id"+"\t"+"gene_id"+"\t"+"transcript_id"+"\t"+"t_fw_regvec"+"\t"+"t_rw_regvec"+"\t"+"fw_regvec"+"\t"+"rw_regvec"+"\t"+"fw_mut"+"\t"+"rw_mut");
 
 
-			for(String key: fragments.keySet()) {
-				
-				System.out.println("KEY: "+key); 
+			for(Integer key: new TreeSet<Integer>(fragments.keySet())) {
+
+				//System.out.println("KEY: "+key);
 
 				Fragment f = fragments.get(key);
 				//ID
@@ -114,24 +118,27 @@ public class Runner {
 				Read RW = f.getRW();
 				Read FW = f.getFW();
 
-				// T RW
-				dos.print(RW.getTstart()+"-"+RW.getTstop()+"\t");
 				//T FW
-				dos.print(FW.getTstart()+"-"+FW.getTstop()+"\t");
+				dos.print(FW.getTstart()+f.getTstart()+"-"+(FW.getTstop()+f.getTstart())+"\t");
+				// T RW
+				dos.print(RW.getTstart()+f.getTstart()+"-"+(RW.getTstop()+f.getTstart())+"\t");
 
-
-				//RW
-				dos.print(Utils.prettyRegionVector(RW.getGenPos())+"\t");
 
 				//FW
 				dos.print(Utils.prettyRegionVector(FW.getGenPos())+"\t");
 
+				//RW
+				dos.print(Utils.prettyRegionVector(RW.getGenPos())+"\t");
+
+
+				System.out.println(key+"\t"+f.getTstart()+"-"+f.getTstop());
 				//FW MUT
+				//dos.print(1+"\t");
 				dos.print(Utils.prettyMutations(FW.getSequence().getPositions())+"\t");
 
 				//RW MUT
-				dos.print(Utils.prettyMutations(RW.getSequence().getPositions())+"\t");
-
+				dos.print(Utils.prettyMutations(RW.getSequence().getPositions())+"\n");
+				//dos.print(1+"\n");
 			}
 
 
@@ -148,7 +155,7 @@ public class Runner {
 
  }
 
-  public static void printFASTAQ(String fname, HashMap<String,String> map) {
+  public static void printFASTAQ(String fname, HashMap<Integer,String> map) {
 
 	  //POSSIBLE ERROR : check if odends with / or not
 	  File outputfile= new File(od+fname);
@@ -157,14 +164,14 @@ public class Runner {
 
 			FileWriter fos = new FileWriter(outputfile);
 			PrintWriter dos = new PrintWriter(fos);
-			for(String id: map.keySet()){
+			for(Integer id: new TreeSet<Integer>(map.keySet())){
 				dos.println("@"+ id);
 				String sequence = map.get(id);
 				dos.println(sequence);
 				dos.println("+"+id);
 				StringBuilder qualityScore = new StringBuilder();
 				for(int i=0 ; i< sequence.length(); i++) {
-					qualityScore.append("~");
+					qualityScore.append("I");
 				}
 				dos.println(qualityScore.toString());
 
@@ -212,7 +219,9 @@ public class Runner {
 				fidx= cmd.getOptionValue("fidx");
 				gtf= cmd.getOptionValue("gtf");
 				od= cmd.getOptionValue("od");
-				nMut = (int) ((mutationrate*length)/100);
+				nMut = (int) ((mutationrate*frlength)/100);
+				//System.out.println(mutationrate*length);
+
 
 			}
 			else{
