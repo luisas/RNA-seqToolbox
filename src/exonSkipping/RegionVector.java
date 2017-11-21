@@ -1,7 +1,9 @@
 package exonSkipping;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Vector;
 
 public class RegionVector {
@@ -23,11 +25,59 @@ public class RegionVector {
 	}
 
 
+	public Region getElement(int i){
+
+		Collections.sort(this.vector);
+
+		return vector.get(i);
+
+	}
+
 	public Region getFirst(){
 
 		Collections.sort(this.vector, comparator);
 
 		return this.vector.firstElement();
+
+	}
+
+	public RegionVector getIntersect(Region r){
+
+	RegionVector rv = new RegionVector();
+
+
+
+      for (Region region : this.getVector()){
+
+    	  if(region.getStart() > r.getStart() && region.getEnd()< r.getEnd()){
+    		  //INSIDE
+    		  rv.getVector().add(region);
+    	  }else if (region.getStart() < r.getStart() && region.getEnd()> r.getEnd()){
+    		  rv.getVector().add(r);
+    		  break; 
+    	  }
+    	  else if (region.getStart()<r.getStart() && region.getEnd() < r.getEnd()){
+    		  rv=new RegionVector();
+    		  rv.getVector().add(new Region(r.getStart(),region.getEnd()));
+
+
+    	  }
+    	  else if(region.getStart() > r.getStart() && region.getEnd()> r.getEnd()){
+
+    		  rv.getVector().add(new Region(region.getStart(),r.getEnd()));
+    		  break ;
+    	  }
+
+
+      }
+
+
+
+
+
+
+		return rv;
+
 
 	}
 

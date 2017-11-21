@@ -10,6 +10,14 @@ import exonSkipping.RegionVector;
 import exonSkipping.Transcript;
 import exonSkipping.Utilities;
 
+
+/**
+ * Saves the reads inside the Fragments hashMap.
+ * This can be then used to retrieve the informations needed for the final output.
+ *
+ * @author santus
+ *
+ */
 public class ReadCreator {
 
 	private HashMap<Integer, Fragment> fragments;
@@ -21,8 +29,6 @@ public class ReadCreator {
 	private double SD;
 	private  String readcounts;
 	private double mutationrate;
-	private  int nMut;
-
 
 
 	public ReadCreator(Annotation gTFannotation, GenomeSequenceExtractor ge,
@@ -36,7 +42,6 @@ public class ReadCreator {
 		SD = sD;
 		this.readcounts = readcounts;
 		this.mutationrate = mutationrate;
-		this.nMut = nMut;
 
 		this.fragments = new HashMap<Integer,Fragment>();
 
@@ -55,7 +60,7 @@ public class ReadCreator {
 			for(String geneID : readCounts.keySet()){
 
 					for(String t: readCounts.get(geneID).keySet()){
-						System.out.println("TRANSCRIPT "+t);
+						//System.out.println("TRANSCRIPT "+t);
 
 						Gene gene = GTFannotation.getGenes().get(geneID);
 						Transcript transcript = gene.getTranscripts().get(t);
@@ -68,30 +73,26 @@ public class ReadCreator {
 						String fragmentSequence ="";
 						String readSequenceFW ="";
 						String readSequenceRW = "";
-						//Utilities.printRegionVector(GTFannotation.getGenes().get(gene).getRegionVectorTranscripts());
 
 
-						RegionVector prova = Utils.getGenomicRV(50010073, 50017566, geneID, t, GTFannotation);
 
-						Utilities.printRegionVector(prova);
-
-						System.out.println("Number Reads"+numberReads);
+						//System.out.println("Number Reads"+numberReads);
 						for(int id= 0 ; id < numberReads; id++){
 							//CALC FRAGMENT LENGTH
 							 int ndSample = (int) nd.sample();
 
 							 FL = Integer.max(length, ndSample);
 
-							 System.out.println("ND SAMPLE"+ndSample);
+							 //System.out.println("ND SAMPLE"+ndSample);
 							 //GET RANDOM START POSITION
 							 startPosition = Utils.getRandomPos(transcript.getRegionVectorExons().getRegionsLength(), FL);
 							 int endPosition = startPosition+FL;
 
-							 System.out.println("fragment LENGTH : "+FL);
+							 //System.out.println("fragment LENGTH : "+FL);
 							 //GET FRAGMENT SEQUENCE
-							 fragmentSequence = ge.getFragmentSequence(startPosition,endPosition,transcript,gene);
+							// fragmentSequence = ge.getFragmentSequence(startPosition,endPosition,transcript,gene);
 
-							 System.out.println(fragmentSequence);
+							 //System.out.println(fragmentSequence);
 
 							 //GET FW READ SEQUENCE
 							 int startFW =  0;
@@ -99,13 +100,13 @@ public class ReadCreator {
 							 readSequenceFW = fragmentSequence.substring(0, length);
 							 //readSequenceFW=ge.getReadSequence(startFW, stopFW,transcript,gene);
 							 //System.out.println("CHR:"+chr+" startFW"+startFW +"stopFW"+stopFW);
-							 System.out.println(readSequenceFW);
+							// System.out.println(readSequenceFW);
 
 							 //GET RW READ SEQUENCE
 							 int stopRW=FL;
 							 int startRW = stopRW-length;
 							 readSequenceRW= Utils.getRevComplement(fragmentSequence.substring(startRW, stopRW));
-							 System.out.println(readSequenceRW);
+							// System.out.println(readSequenceRW);
 
 							 //GET MUTATED SEQUENCES
 							 MutatedSeq mFW = new MutatedSeq(readSequenceFW,mutationrate);
@@ -196,18 +197,6 @@ public class ReadCreator {
 	public void setMutationrate(double mutationrate) {
 		this.mutationrate = mutationrate;
 	}
-
-
-	public int getnMut() {
-		return nMut;
-	}
-
-
-	public void setnMut(int nMut) {
-		this.nMut = nMut;
-	}
-
-
 
 
 }

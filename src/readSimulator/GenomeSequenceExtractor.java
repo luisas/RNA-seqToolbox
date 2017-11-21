@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.HashMap;
 import java.util.StringTokenizer;
-
-import exonSkipping.Annotation;
 import exonSkipping.Gene;
 import exonSkipping.Region;
 import exonSkipping.Transcript;
@@ -45,28 +43,43 @@ public class GenomeSequenceExtractor {
 //	}
 
 
+	/**
+	 *
+	 * GIVEN a transcript sequence gets a substring of it
+	 *
+	 */
 
 
-	public static String getFragmentSequence(int start, int stop, Transcript transcript, Gene gene){
+	public static String getFragmentSequence(int start, int stop, String transcriptSeq){
 
-		StringBuilder sb = new StringBuilder();
+		return transcriptSeq.substring(start, stop);
 
-		String transcriptSeq = getTranscriptSequence(gene,transcript);
-
-		for(int i =start ; i<stop; i++){
-			if(i>transcriptSeq.length()){
-				System.out.println("last position of read is bigger than the transcript length !");
-				System.out.println("Position in read: "+ i);
-				System.exit(0);
-			}
-			sb.append(transcriptSeq.charAt(i));
-		}
-
-		return sb.toString();
 	}
+//	public static String getFragmentSequence(int start, int stop, Transcript transcript, Gene gene){
+//
+//		StringBuilder sb = new StringBuilder();
+//
+//		String transcriptSeq = getTranscriptSequence(gene,transcript);
+//
+//		for(int i =start ; i<stop; i++){
+//			if(i>transcriptSeq.length()){
+//				System.out.println("last position of read is bigger than the transcript length !");
+//				System.out.println("Position in read: "+ i);
+//				System.exit(0);
+//			}
+//			sb.append(transcriptSeq.charAt(i));
+//		}
+//		return sb.toString();
+//	}
 
 
 
+	/**
+	 * Gets the transcript (gespliced!!) sequence
+	 * @param gene
+	 * @param transcript
+	 * @return
+	 */
 	public static String getTranscriptSequence(Gene gene, Transcript transcript){
 		boolean NL = false;
 		int lineLength = 60;
@@ -195,8 +208,7 @@ public class GenomeSequenceExtractor {
 			}
 
 			} catch (FileNotFoundException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+ 				e1.printStackTrace();
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();

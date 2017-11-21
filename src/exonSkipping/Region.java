@@ -1,6 +1,6 @@
 package exonSkipping;
 
-public class Region {
+public class Region implements Comparable<Region>{
 
 	private int start;
 	private int end;
@@ -52,6 +52,11 @@ public class Region {
 
 	public void setEnd(int end) {
 		this.end = end;
+	}
+
+	@Override
+	public int compareTo(Region o) {
+		return this.getStart()-o.getStart();
 	}
 
 

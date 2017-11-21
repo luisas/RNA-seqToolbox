@@ -11,10 +11,9 @@ public class MutatedSeq {
 
 	private String sequence;
 	private TreeSet<Integer> positions = new TreeSet<Integer>();
-
 	double mutationRate;
 
- static Set<Character> na ;
+    static Set<Character> na ;
 
 
 	public MutatedSeq(String sequence, double mutationRate) {
@@ -28,37 +27,25 @@ public class MutatedSeq {
 		na.add('G');
 		na.add('T');
 
-//		if(sequence.length()<nMut){
-//			System.out.println("Number of mutations higher than the length of the read itself!!!");
-//			System.exit(0);
-//		}
 
-
-//		while(positions.size()<nMut){
-//
-//			int posMutation  = (int)(Math.random()*(sequence.length()-1) );
-//			sequence= mutate(sequence,posMutation,na);
-//			positions.add((int)(posMutation));
-//
-//
-//		}
-
-
+		//See if there is any Mutation
 		Random r ;
 		for(int i = 0 ; i<sequence.length(); i++){
 			r = new Random();
+			//0 is inclusive, 100 is exclusive
 			double myRandom = r.nextInt(100);
 			if(myRandom<mutationRate){
-				sequence= mutate(sequence,i,na);
+				sequence= mutate(sequence,i);
 				positions.add((int)(i));
 			}
 		}
+
+		// If there was no mutation, add -1 to the positions set
 		if(positions.size()==0 ){
 			positions.add((int)(-1));
-
 		}
-		this.sequence = sequence;
 
+		this.sequence = sequence;
 
 	}
 
@@ -68,30 +55,48 @@ public class MutatedSeq {
 //
 //		MutatedSeq m = new MutatedSeq("AAAAAAAAAAAAAAAAAA",5);
 //
-////		for(Integer i : m.getPositions()){
-////			System.out.println(i);
-////		}
-//		//String a = "ACTGACTG";
-//		//int pos = 0;
-//		//System.out.println(a);
-//		//System.out.println(mutate(a,pos,na));
+//		for(Integer i : m.getPositions()){
+//			System.out.println(i);
+//		}
+//		String a = "ACTGACTG";
+//		int pos = 0;
+//		System.out.println(a);
+//		System.out.println(mutate(a,pos,na));
 //
 //	}
 
 
-	public static String mutate(String string, int position ,Set set){
+	public static String mutate(String string, int position ){
 
 		char[] charArray = string.toCharArray();
 
 		char mutation = string.charAt(position);
-		while(mutation==string.charAt(position)){
-			mutation=getMutChar(set);
 
+		while(mutation==string.charAt(position)){
+			mutation=getMutChar();
 		}
 	    charArray[position] = mutation;
 	    return new String(charArray);
 
 
+	}
+
+	/*
+	 * Gets a random character in set na
+	 */
+	public static Character getMutChar(){
+		int item = new Random().nextInt(na.size());
+		char result ='-';
+		int i = 0;
+		for(Character c : na)
+		{
+		    if (i == item){
+		    	result=c;
+		    }
+
+		    i++;
+		}
+		return result;
 	}
 
 
@@ -114,21 +119,7 @@ public class MutatedSeq {
 		this.positions = positions;
 	}
 
-	public static Character getMutChar(Set<Character> set){
-		int size = set.size();
-		int item = new Random().nextInt(size); // In real life, the Random object should be rather more shared than this
-		int i = 0;
-		char result ='-';
-		for(Character obj : set)
-		{
-		    if (i == item){
-		    	result=obj;
-		    }
 
-		    i++;
-		}
-		return result;
-	}
 
 
 
