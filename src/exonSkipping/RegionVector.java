@@ -51,19 +51,23 @@ public class RegionVector {
 
     	  if(region.getStart() > r.getStart() && region.getEnd()< r.getEnd()){
     		  //INSIDE
-    		  rv.getVector().add(region);
+    		  rv.getVector().add(new Region(region.getStart(),region.getEnd()+1));
+    		  System.out.println("1");
     	  }else if (region.getStart() < r.getStart() && region.getEnd()> r.getEnd()){
-    		  rv.getVector().add(r);
-    		  break; 
-    	  }
-    	  else if (region.getStart()<r.getStart() && region.getEnd() < r.getEnd()){
     		  rv=new RegionVector();
-    		  rv.getVector().add(new Region(r.getStart(),region.getEnd()));
-
+    		  rv.getVector().add(r);
+    		  System.out.println("2");
+    		  break;
+    	  }
+    	  else if (region.getStart()<r.getStart()  && region.getEnd() < r.getEnd() && region.getEnd()+1 >r.getStart()){
+    		  rv=new RegionVector();
+    		  System.out.println("3");
+    		  rv.getVector().add(new Region(r.getStart(),region.getEnd()+1));
 
     	  }
-    	  else if(region.getStart() > r.getStart() && region.getEnd()> r.getEnd()){
+    	  else if(region.getStart() > r.getStart() && region.getEnd()> r.getEnd() &&  region.getStart() < r.getEnd()){
 
+    		  System.out.println("4");
     		  rv.getVector().add(new Region(region.getStart(),r.getEnd()));
     		  break ;
     	  }

@@ -35,7 +35,7 @@ public class Region implements Comparable<Region>{
 
 	public int getLength(){
 
-		return (this.end-this.start);
+		return (this.end-this.start+1);
 	}
 
 	public int getStart() {

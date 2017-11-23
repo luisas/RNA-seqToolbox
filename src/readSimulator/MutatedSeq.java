@@ -40,10 +40,10 @@ public class MutatedSeq {
 			}
 		}
 
-		// If there was no mutation, add -1 to the positions set
-		if(positions.size()==0 ){
-			positions.add((int)(-1));
-		}
+//		// If there was no mutation, add -1 to the positions set
+//		if(positions.size()==0 ){
+//			positions.add((int)(-1));
+//		}
 
 		this.sequence = sequence;
 

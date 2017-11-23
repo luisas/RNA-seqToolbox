@@ -62,33 +62,7 @@ public class Runner {
 
 		 printOutput();
 
-		// SAVE ALL FRAGMENTS AND READS
-		//ReadCreator rc = new ReadCreator(GTFannotation, ge,length, frlength, SD, readcounts,mutationrate,  nMut);
-
-
-
-		//PRINT RESULT FILE
-	//	printInfos("read.mappinginfo", rc.getFragments());
-
-
-		//RETRIEVE READ SEQUENCE INFO FROM FRAGMENTS HASHMAP
-//		HashMap<Integer,String> FW = new HashMap<Integer,String>();
-//		for(Integer key: rc.getFragments().keySet()){
-//			FW.put(key, rc.getFragments().get(key).getFW().getSequence().getSequence());
-//		}
-//		HashMap<Integer,String> RW = new HashMap<Integer,String>();
-//		for(Integer key: rc.getFragments().keySet()){
-//			RW.put(key, rc.getFragments().get(key).getRW().getSequence().getSequence());
-//		}
-
-		//PRINT FASTAQ FILE
-		//printFASTAQ("fw.fastq", FW);
-		//printFASTAQ("rw.fastq", RW);
-
-
 	}
-
-
 
 
 
@@ -140,7 +114,7 @@ public static void printOutput() throws IOException{
 
 				//go through all reads
 				for(int id= 0 ; id < numberReads; id++){
-					System.out.println(idFragment);
+					//System.out.println(idFragment);
 					//CALC FRAGMENT LENGTH
 
 					 int ndSample = (int) nd.sample();
@@ -173,11 +147,11 @@ public static void printOutput() throws IOException{
 					 MutatedSeq mRW = new MutatedSeq(readSequenceRW,mutationrate);
 
 					 //STORE READS
-					 System.out.println("tstart"+ startFW+startPosition);
+					 //System.out.println("tstart"+ startFW+startPosition);
 					 RegionVector genPosFW = Utils.getGenomicRV( startFW+startPosition, stopFW+startPosition,  geneID,  t,  GTFannotation);
-					 
-					 System.out.println("-----start: "+startRW+startPosition);
-					 System.out.println("--------stop : "+stopRW+startPosition);
+
+					 //System.out.println("-----start: "+startRW+startPosition);
+					 //System.out.println("--------stop : "+stopRW+startPosition);
 					 RegionVector genPosRW = Utils.getGenomicRV( startRW+startPosition, stopRW+startPosition,  geneID,  t,  GTFannotation);
 
 					 Read RW = new Read("-", startRW, stopRW, mRW,genPosRW);
@@ -298,15 +272,11 @@ public static void printOutput() throws IOException{
 				//RW
 				dos.print(Utils.prettyRegionVector(RW.getGenPos())+"\t");
 
-
-				//System.out.println(key+"\t"+f.getTstart()+"-"+f.getTstop());
 				//FW MUT
-				//dos.print(1+"\t");
 				dos.print(Utils.prettyMutations(FW.getSequence().getPositions())+"\t");
 
 				//RW MUT
 				dos.print(Utils.prettyMutations(RW.getSequence().getPositions())+"\n");
-				//dos.print(1+"\n");
 			}
 
 
