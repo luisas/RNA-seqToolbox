@@ -6,10 +6,12 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 import exonSkipping.Gene;
 import exonSkipping.Region;
+import exonSkipping.RegionVector;
 import exonSkipping.Transcript;
 
 public class GenomeSequenceExtractor {
@@ -36,34 +38,49 @@ public class GenomeSequenceExtractor {
 
 	public static void main(String[] args) {
 
+
+
+
 		GenomeSequenceExtractor ge = new GenomeSequenceExtractor(new File("/home/proj/biosoft/praktikum/genprakt/ReadSimulator/Homo_sapiens.GRCh37.75.dna.toplevel.fa"), new File("/home/proj/biosoft/praktikum/genprakt/ReadSimulator/Homo_sapiens.GRCh37.75.dna.toplevel.fa.fai" ));
 
-		String gene = "ENSG00000160767";
-		String transcript = "ENST00000361361";
+		String gene = "ENSG00000183091";
+		String transcript = "ENST00000427231";
+
+
+//152468700-152468903
+
+//
+	String sequence = Utils.getRevComplement(getSequence("2",152468700,152468903));
+	System.out.println(sequence);
+	System.out.println(sequence.length());
+
+//
+//		System.out.println(Utils.getRevComplement(getSequence("2",152437997,152438014))+Utils.getRevComplement(getSequence("2",152437362,152437418)));
+
+
 		String gtf= "/home/proj/biosoft/praktikum/genprakt/ReadSimulator/Homo_sapiens.GRCh37.75.gtf";
 		exonSkipping.parserGTF.parse(gtf);
 
+
+
 		String tseq= ge.getTranscriptSequence(Utils.annotation.getGenes().get(gene), Utils.annotation.getGenes().get(gene).getTranscripts().get(transcript));
-		System.out.println(tseq.substring(491,566));
-
-		String revComp = Utils.getRevComplement(tseq); 
-		
-		System.out.println("trzzzz");
-		System.out.println(revComp.substring(491,566));
-		
-		
-		
-		if(Utils.annotation.getGenes().get(gene).getStrand().equals("-")){
-
-			System.out.println(new StringBuilder(tseq.substring(491,566)).reverse().toString());
-
-		}else{
-			System.out.println(Utils.getRevComplement(tseq.substring(491,566)));
-			System.out.println("else");
-		}
+		System.out.println( tseq);
+		Transcript t = Utils.annotation.getGenes().get(gene).getTranscripts().get(transcript);
 
 
-		//ge.getSequence("19",50015536,50029590);
+
+
+
+		System.out.println("FWREAD");
+		System.out.println(tseq.substring(16469,16544 ));
+
+		System.out.println("--------");
+		System.out.println("RWREAD");
+		System.out.println(Utils.getRevComplement(tseq.substring( 16610,16685)));
+
+
+
+
 	}
 
 
@@ -74,11 +91,55 @@ public class GenomeSequenceExtractor {
 	 */
 
 
+
+
 	public static String getFragmentSequence(int start, int stop, String transcriptSeq){
 
 		return transcriptSeq.substring(start, stop);
 
 	}
+
+
+
+	public static String getTranscriptSequenceProva(Gene gene, Transcript transcript){
+
+		StringBuilder sequence = new StringBuilder();
+		RegionVector positions = new RegionVector();
+		for(Region exon : transcript.getRegionVectorExons().getVector()){
+
+			RegionVector current = Utils.getGenomicRV(exon.getStart(), exon.getEnd(), gene.getId(), transcript.getId(), Utils.annotation);
+			positions.getVector() ;
+		}
+		boolean NL = true;
+		int lineLength = 60;
+		String strand = gene.getStrand();
+
+		if(strand.equals("+")){
+			for(Region r : positions.getVector()){
+				sequence.append(getSequence(gene.getChr() , r.getStart(),r.getEnd()-1));
+			}
+
+		}else{
+			for(Region r : positions.getVector()){
+				sequence.insert(0,Utils.getRevComplement(getSequence(gene.getChr() , r.getStart(),r.getEnd()-1)));
+			}
+
+		}
+
+		String sequenceString = sequence.toString();
+
+		String seq;
+		if(NL){
+			seq=sequenceString.replaceAll("(.{"+lineLength+"})", "$1\n");
+
+		}else{
+			seq = sequenceString;
+		}
+
+
+		return seq;
+	}
+
 
 	/**
 	 * Gets the transcript (gespliced!!) sequence
@@ -96,24 +157,51 @@ public class GenomeSequenceExtractor {
 
 		StringBuilder sb = new StringBuilder();
 		int countNL = 0 ;
+
+		Collections.sort(transcript.getRegionVectorExons().getVector());
+		System.out.println(Utils.prettyRegionVector(transcript.getRegionVectorExons()));
+
+		int sum = 0;
 		for (Region r : transcript.getRegionVectorExons().getVector()){
 
-			sb.append(getSequence(chr, r.getStart(), r.getEnd()));
+			if(strand.equals("-")){
+
+
+
+				//System.out.println(Utils.getRevComplement(getSequence(chr, r.getStart(), r.getEnd())));
+//				System.out.println("EXON LENGTH: "+ r.getLength());
+
+//
+				String seq = getSequence(chr, r.getStart(), r.getEnd());
+				String rev =  Utils.getRevComplement(seq);
+				sb.insert(0,rev);
+
+//				System.out.println("lll "+ seq.charAt(0));
+				if(r.getLength()!=rev.length() ){
+//
+//					System.out.println(rev);
+					System.out.println("--------------------");
+			    System.out.println(r.getLength());
+				System.out.println("exon");
+			    System.out.println(seq);
+			    System.out.println(seq.length());
+			    System.out.println(rev);
+			    System.out.println(rev.length());
+
+				}
+
+				sum += Utils.getRevComplement(getSequence(chr, r.getStart(), r.getEnd())).length() ;
+			}else{
+				sb.append(getSequence(chr, r.getStart(), r.getEnd()));
+
+			}
 		}
+
 
 		String sequenceString = sb.toString();
 
-		System.out.println("Strand : "+strand);
+		System.out.println("length "+ sum);
 
-		if(strand.equals("-")){
-			System.out.println("got it!");
-			System.out.println("Original seq");
-			System.out.println(sequenceString.substring(491,566));
-			sequenceString  = Utils.getRevComplement(sequenceString.toString());
-			System.out.println("revComp");
-			System.out.println(sequenceString.substring(491,566));
-			System.out.println("------------");
-		}
 
 		String seq;
 		if(NL){
@@ -128,16 +216,70 @@ public class GenomeSequenceExtractor {
 	}
 
 
-	public static String getSequence(String chr, int start, int end) {
 
+	public static String getSequence(String chr, int start, int end) {
 
 		long[] array =  (long[]) mapIdx.get(chr);
 		StringBuilder sb = new StringBuilder();
-
 		long entryStart =array[1];
 		long lineLength = array[2];
 		long lineLengthwnl= array[3];
 
+
+		long globalStart = entryStart + start + (start/lineLength)-1;
+		long globalEnd = entryStart + end+ (end/lineLength);
+
+		
+
+		
+		if(start%lineLength==0 ){
+			
+				globalStart--; 
+				System.out.println("minus!");
+				
+		}
+//		else if((end%lineLength == 1) && (start%lineLength != 1)){
+//			globalEnd++; 
+//			System.out.println("plus");
+//		}
+		long globalPosition = globalStart;
+		String a ="";
+		int sum = 0 ;
+		while(globalPosition < globalEnd ){
+
+			try {
+				raf.seek(globalPosition);
+				byte b;
+				b = raf.readByte();
+				if((char) b == 'A' || (char) b == 'C' || (char) b == 'T' || (char) b == 'G' || (char) b == 'N'){
+					sb.append((char)b);
+					a +=(char)b;
+					sum ++ ;
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			globalPosition ++;
+
+		}
+
+		return a;
+
+
+	}
+
+
+
+	public static String getSequenceA(String chr, int start, int end) {
+
+		int c = 0 ;
+
+		long[] array =  (long[]) mapIdx.get(chr);
+		StringBuilder sb = new StringBuilder();
+		long entryStart =array[1];
+		long lineLength = array[2];
+		long lineLengthwnl= array[3];
 
 
 		long s = start + entryStart -1 + (start/lineLength);
@@ -149,27 +291,39 @@ public class GenomeSequenceExtractor {
 
 		try {
 
+
 			long i = s;
 			long limit = (s+lengthSeq);
 
+
 			long count = rest-1;
-			int countNL = 0 ;
+
+
+
+
 			while (i<limit) {
 
 
+
+
 				count ++;
-				countNL++;
 				raf.seek(i);
 
-				if(count == lineLengthwnl){
-			        count = 0;
-					limit++;
+
+				if(count == lineLengthwnl  || count==0){
+
+					if(count == 0 ){
+						c++;
+					}
+
+						limit++;
+				        count = 0;
 
 				}else {
 					byte b = raf.readByte();
 					sb.append((char)b);
-				}
 
+				}
 		        i++;
 
 
@@ -180,7 +334,8 @@ public class GenomeSequenceExtractor {
 			e.printStackTrace();
 		}
 
-		return sb.toString();
+		//System.out.println(sb.toString().substring(0,sb.toString().length()-c));
+		return sb.toString().substring(0,sb.toString().length()-c);
 
 	}
 

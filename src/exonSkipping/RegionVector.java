@@ -6,6 +6,8 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Vector;
 
+import readSimulator.Utils;
+
 public class RegionVector {
 
 	private Vector<Region> vector;
@@ -45,27 +47,44 @@ public class RegionVector {
 
 	RegionVector rv = new RegionVector();
 
+	Collections.sort(this.getVector());
 
 
       for (Region region : this.getVector()){
+    	  System.out.println(region.getStart()+"-"+region.getEnd());
 
-    	  if(region.getStart() > r.getStart() && region.getEnd()< r.getEnd()){
-    		  //INSIDE
-    		  rv.getVector().add(new Region(region.getStart(),region.getEnd()+1));
+
+    	  //CASE 1: one region in the region vector is completely contained in the r Region.
+    	  if(region.getStart() >= r.getStart() && region.getEnd()<= r.getEnd()){
+
+    		  System.out.println(region.getEnd());
+    		  System.out.println(r.getEnd());
+    		  if(region.getEnd() == r.getEnd()){
+    			  System.out.println("here");
+    			  rv.getVector().add(new Region(region.getStart(),region.getEnd()));
+    		  }else{
+        		  rv.getVector().add(new Region(region.getStart(),region.getEnd()+1));
+
+    		  }
     		  System.out.println("1");
-    	  }else if (region.getStart() < r.getStart() && region.getEnd()> r.getEnd()){
+    		  continue;
+    	  }
+    	  //CASE 2: one region in the region vector is bigger than the R (r is contained in it)
+    	  else if (region.getStart() <= r.getStart() && region.getEnd()>= r.getEnd()){
     		  rv=new RegionVector();
     		  rv.getVector().add(r);
     		  System.out.println("2");
     		  break;
     	  }
-    	  else if (region.getStart()<r.getStart()  && region.getEnd() < r.getEnd() && region.getEnd()+1 >r.getStart()){
+    	  //CASE 3: one region
+    	  else if (region.getStart()<=r.getStart()  && region.getEnd() <= r.getEnd() && region.getEnd()+1 >=r.getStart()){
     		  rv=new RegionVector();
-    		  System.out.println("3");
     		  rv.getVector().add(new Region(r.getStart(),region.getEnd()+1));
+    		  System.out.println("3");
+    		  continue;
 
     	  }
-    	  else if(region.getStart() > r.getStart() && region.getEnd()> r.getEnd() &&  region.getStart() < r.getEnd()){
+    	  else if(region.getStart() >= r.getStart() && region.getEnd()>= r.getEnd() &&  region.getStart() < r.getEnd()){
 
     		  System.out.println("4");
     		  rv.getVector().add(new Region(region.getStart(),r.getEnd()));

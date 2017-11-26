@@ -1,6 +1,7 @@
 package plots;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -11,7 +12,7 @@ public class PlotUtils {
 
 
 
-	public static void getCumHist(Vector<Double> vector, String title, String xlab, String ylab, String outfile){
+	public static void getCumHist(Vector<Double> vector, String title, String xlab, String ylab, String outfile) throws FileNotFoundException, IOException{
 
 		LinePlot lp_exons = new LinePlot(title, xlab, ylab);
 		Pair<Vector<Double>,Vector<Double>> p = PlotUtils.ecdf(vector);

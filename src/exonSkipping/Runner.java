@@ -156,9 +156,9 @@ public class Runner {
 		String nameSkippedExon="skipped_exons.jpg";
 		String nameSkippedBases="skipped_bases.jpg";
 
-	
-		PlotUtils.getCumHist(max_exons, "Cumulative distribution of skipped Exons", "Skipped Exons", "Number Of Events", outputFolder+nameSkippedExon);
-		PlotUtils.getCumHist(max_bases, "Cumulative distribution of skipped Bases", "Skipped Bases", "Number Of Events", outputFolder+nameSkippedBases);
+
+	//	PlotUtils.getCumHist(max_exons, "Cumulative distribution of skipped Exons", "Skipped Exons", "Number Of Events", outputFolder+nameSkippedExon);
+	//	PlotUtils.getCumHist(max_bases, "Cumulative distribution of skipped Bases", "Skipped Bases", "Number Of Events", outputFolder+nameSkippedBases);
 
 
 

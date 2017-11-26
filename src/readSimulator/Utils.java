@@ -29,49 +29,65 @@ public class Utils {
 
 	public static void main(String[] args){
 
-		System.out.println("Class Utils run");
 		//GTF file to parse
 		String gtf= "/home/proj/biosoft/praktikum/genprakt/ReadSimulator/Homo_sapiens.GRCh37.75.gtf";
 		exonSkipping.parserGTF.parse(gtf);
-		System.out.println("parsed!");
 
-		String gene = "ENSG00000160767";
-		String transcript = "ENST00000361361";
+		String gene = "ENSG00000183091";
+		String transcript = "ENST00000427231";
+//
+//		RegionVector rv = getGenomicRV(  1666,1741,gene, transcript,annotation);
+//		System.out.println(Utils.prettyRegionVector(rv));
 
-		RegionVector rv = getGenomicRV( 491,566,gene, transcript,annotation);
 
-		//System.out.println("POS "+getGenomicPosition(810, annotation.getGenes().get(gene).getTranscripts().get(transcript)) + " Statt 50017390");
-		//System.out.println("----------");
-		System.out.println(Utils.prettyRegionVector(rv));
-//		System.out.println("---------------------------------------------_LLL----------------------");
-//		RegionVector rv1 = getGenomicRV( 192,267,gene, transcript,annotation);
-//		System.out.println(Utils.prettyRegionVector(rv1));
-//		System.out.println("---------------------------------------------_LLL----------------------");
-//		RegionVector rv2 = getGenomicRV( 145,220,gene, transcript,annotation);
-//		System.out.println(Utils.prettyRegionVector(rv2));
+		RegionVector rv1 = getGenomicRV( 175,250,gene, transcript,annotation);
+		System.out.println(Utils.prettyRegionVector(rv1));
+
+		RegionVector rv2 = getGenomicRV( 2025,2100,"ENSG00000162946","ENST00000439617",annotation);
+		System.out.println(Utils.prettyRegionVector(rv2));
+
+
+
 
 	}
 
 	public static RegionVector getGenomicRV(int start, int stop, String geneID, String transcriptID, Annotation annotation){
 
 		RegionVector rv = new RegionVector();
-
 		Gene gene = annotation.getGenes().get(geneID);
 		Transcript transcript = gene.getTranscripts().get(transcriptID);
+		String strand = gene.getStrand();
+		System.out.println("Strand "+ strand);
 
+		//Consider strandness
+		if(strand.equals("-")){
+			int temp = start;
+			start= transcript.getRegionVectorExons().getRegionsLength()-stop;
+			stop =transcript.getRegionVectorExons().getRegionsLength()-temp;
+		}
+
+		System.out.println("STOP: "+ stop);
+
+		//calculate genomic positions
 		int Gstart = getGenomicPosition(start,transcript);
-		//System.out.println("Genomic Start : "+Gstart);
-
 		int Gstop = getGenomicPosition(stop,transcript);
-		//System.out.println("Genomic Stop : "+Gstop);
 
+
+
+
+		System.out.println("GSTART "+Gstart);
+		System.out.println("GSTOP "+Gstop);
+
+		//Get intersections
 		Region genomicRegion = new Region(Gstart, Gstop);
-
-		//System.out.println("Genomic region vector: ");
+	    Collections.sort(transcript.getRegionVectorExons().getVector());
 		rv = transcript.getRegionVectorExons().getIntersect(genomicRegion);
 
+		System.out.println(Utils.prettyRegionVector(transcript.getRegionVectorExons()));
+
+
 		if(rv.getVector().size()==0){
-			rv.getVector().add(new Region(Gstart,Gstop)); 
+			rv.getVector().add(new Region(Gstart,Gstop));
 		}
 
 		return rv;
@@ -81,16 +97,44 @@ public class Utils {
 	private static int getGenomicPosition(int i, Transcript transcript) {
 		Vector<Integer> transcriptPositions =getPositionVector(transcript);
 	    Collections.sort(transcriptPositions);
-	    // Get the value smaller than the value u were looking for
-	    int index = Collections.binarySearch(transcriptPositions, i);
+	    Collections.sort(transcript.getRegionVectorExons().getVector());
+
+
+
+//	    System.out.println("GET genomic position debug");
+//	    System.out.println("input position: "+i);
+	    int position = transcript.getRegionVectorExons().getRegionsLength()-i;
+
+//	    //consider strandness
+//		String geneID = transcript.getGeneId();
+//		String strand =  Utils.annotation.getGenes().get(geneID).getStrand();
+//		if(strand.equals("+")){
+//			position=i;
+//		}
+
+	    position=i;
+//	    System.out.println("input position converted: "+position);
+		//calculate index
+	    int index = Collections.binarySearch(transcriptPositions,position);
+
 	    if(index<0){
 	    	index++;
 	    	index++;
 	    	index=Math.abs(index);
 	    }
-	    //IF EXACTLY FOUND????
-        int supplement = i -transcriptPositions.get(index);
 
+
+
+
+        int supplement = position -transcriptPositions.get(index);
+
+
+//        System.out.println("index "+index);
+//        System.out.println("Supplement "+supplement);
+//        System.out.println("Position "+position);
+//        System.out.println("Transcript position index "+transcriptPositions.get(index));
+//        System.out.println(transcriptPositions);
+//        System.out.println(Utils.prettyRegionVector(transcript.getRegionVectorExons()));
 		return transcript.getRegionVectorExons().getElement(index).getStart() + supplement;
 	}
 
@@ -98,16 +142,37 @@ public class Utils {
 
 	public static Vector<Integer> getPositionVector(Transcript transcript){
 
+		String geneID = transcript.getGeneId();
+		String strand =  Utils.annotation.getGenes().get(geneID).getStrand();
+	    Collections.sort(transcript.getRegionVectorExons().getVector());
+
 		Vector<Integer> v = new Vector<Integer>();
 		int cumLength = 0 ;
-		for(Region r :transcript.getRegionVectorExons().getVector()){
-			v.add(cumLength);
-			cumLength+=r.getLength();
+		if(strand.equals("-l")){
+			Vector<Region> exons = transcript.getRegionVectorExons().getVector();
+
+			for (int i = exons.size() - 1 ; i >= 0 ; i--) {
+				v.add(cumLength);
+				cumLength+=exons.get(i).getLength();
+
+			}
+
+
+		}else{
+
+
+			for(Region r :transcript.getRegionVectorExons().getVector()){
+				v.add(cumLength);
+				cumLength+=r.getLength();
+			}
 		}
+
+
 
 		return v;
 
 	}
+
 
 
 
@@ -201,31 +266,63 @@ public class Utils {
 
 	public static String getRevComplement(String sequence){
 
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(sequence.length());
+
+		int limit = sequence.length();
+		String a = "";
+
+		for(int i = 0 ; i<limit; i++){
 
 
-		for(int i = 0 ; i<sequence.length(); i++){
 
+			int j = 1 ;
 			switch(sequence.charAt(i)){
+
 				case 'A':
-					sb.insert(0,"T");
+					a="T"+a;
+					sb.append('T');
+					j = 0;
 					break;
 				case 'C':
-					sb.insert(0,"G");
+					a="G"+a;
+					sb.append('G');
+					j = 0;
 					break;
 				case 'T':
-					sb.insert(0,"A");
+					a="A"+a;
+					sb.append('A');
+					j = 0;
 					break;
 				case 'G':
-					sb.insert(0,"C");
+					a="C"+a;
+					sb.append('C');
+					j = 0;
 					break;
 				case 'N':
-					sb.insert(0, "N");
+					a="N"+a;
+					sb.append('N');
+					j = 0;
 					break;
 			}
+			if(j==1){
+				System.out.println("position where it goes wrong "+i);
+				System.out.println(sequence.charAt(i));
+
+
+			}
+
 		}
 
-		return sb.toString();
+
+		String string = sb.reverse().toString();
+		if(a.length() != sequence.length()){
+			System.out.println("Problem with utils.getRevComplement function");
+			System.out.println("input length "+sequence.length());
+			System.out.println("output length "+ string.length());
+			System.out.println(sequence);
+			System.out.println(string);
+		}
+		return a;
 	}
 
 	public static String prettyMutations(TreeSet<Integer> set){
