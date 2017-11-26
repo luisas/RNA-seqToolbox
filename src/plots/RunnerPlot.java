@@ -2,10 +2,12 @@ package plots;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import java.util.Vector;
 
@@ -18,15 +20,101 @@ public class RunnerPlot {
 	public static void main(String[] args) throws IOException, InterruptedException {
 
 
-		plotExercise2();
+		plotExercise2("/home/s/santus/Desktop");
 
 
 	}
 
 
 
-	public static void plotExercise2(){
+	public static void plotExercise2(String outputDir) throws FileNotFoundException, IOException{
 
+		//file with all information: to be changed everytime!
+		HashMap<String,Vector<Double>> results = retrieveInformationPlot2("/home/proj/biosoft/praktikum/genprakt/ReadSimulator/output/read.mappinginfo");
+
+		//results.get("fragmentLength")
+		HistogramPlot histoFragments = new HistogramPlot("Fragment length distribution", "Fragment length"," Count", results.get("fragmentLength"),10);
+		histoFragments.plot(outputDir+"/fragmentDistribution.jpeg");
+
+		HistogramPlot histoMut = new HistogramPlot("Mutation distribution pro read", "Number of mutations"," Count", results.get("mutations"),5);
+		histoMut.plot(outputDir+"/mutationDistribution.jpeg");
+
+		//BarPlot barp = new BarPlot("Summary", )
+
+
+	}
+
+	public static HashMap<String,Vector<Double>> retrieveInformationPlot2(String filename){
+
+		HashMap<String,Vector<Double>> result = new HashMap<String,Vector<Double>>();
+
+
+		/*
+		 * GET FRAGMENTS for fragment length distribution
+		 */
+		//read the file and save all the fragments
+		Vector<Double> fragments = new Vector<Double>();
+		Vector<Double> mutations = new Vector<Double>();
+		Vector<Double> barPlot = new Vector<Double>(); 
+		
+		double countRead = 0.0; 
+		double nonSplit = 0.0; 
+		double nonSplitnoMis = 0.0; 
+		double split = 0.0; 
+		double splitMis = 0.0; 
+		try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+			String currentLine;
+			String[] splittedLine;
+			while ((currentLine = br.readLine()) != null ) {
+				if(!currentLine.startsWith("read")) {
+					splittedLine = currentLine.split("\t",2);
+					
+					//FRAGMENT LENGTH 
+					double startFragment = Integer.parseInt(splittedLine[4].split("-")[0]);
+					double stopFragment = Integer.parseInt(splittedLine[5].split("-")[1]);
+					fragments.add(stopFragment-startFragment+1);
+
+					
+					//MUTATIONS
+					double fwmut;
+					double rwmut;
+					if(splittedLine.length == 8 ){
+						mutations.add(0.0);
+					}
+					else if(splittedLine.length == 9){
+						fwmut  = splittedLine[7].split(",").length;
+						mutations.add(fwmut);
+					}
+					else if(splittedLine.length == 10){
+						rwmut  = splittedLine[7].split(",").length;
+						fwmut  = splittedLine[8].split(",").length;
+						mutations.add(rwmut);
+						mutations.add(fwmut);
+					}
+
+					//READS
+					countRead++; 
+
+					
+				}
+			}
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+		result.put("fragmentLength",fragments);
+		result.put("mutations", mutations);
+		
+		barPlot.add(countRead); 
+		result.put("barPlot", barPlot); 
+
+
+
+
+
+
+
+
+		return result;
 	}
 
 
