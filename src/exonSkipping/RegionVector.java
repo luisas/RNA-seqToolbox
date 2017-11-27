@@ -51,7 +51,7 @@ public class RegionVector {
 
 
       for (Region region : this.getVector()){
-    	  System.out.println(region.getStart()+"-"+region.getEnd());
+    	  //System.out.println(region.getStart()+"-"+region.getEnd());
 
 
     	  //CASE 1: one region in the region vector is completely contained in the r Region.
@@ -60,43 +60,39 @@ public class RegionVector {
     		  System.out.println(region.getEnd());
     		  System.out.println(r.getEnd());
     		  if(region.getEnd() == r.getEnd()){
-    			  System.out.println("here");
+    			  //System.out.println("here");
     			  rv.getVector().add(new Region(region.getStart(),region.getEnd()));
     		  }else{
         		  rv.getVector().add(new Region(region.getStart(),region.getEnd()+1));
 
     		  }
-    		  System.out.println("1");
+    		  //System.out.println("1");
     		  continue;
     	  }
     	  //CASE 2: one region in the region vector is bigger than the R (r is contained in it)
     	  else if (region.getStart() <= r.getStart() && region.getEnd()>= r.getEnd()){
     		  rv=new RegionVector();
     		  rv.getVector().add(r);
-    		  System.out.println("2");
+    		  //System.out.println("2");
     		  break;
     	  }
     	  //CASE 3: one region
     	  else if (region.getStart()<=r.getStart()  && region.getEnd() <= r.getEnd() && region.getEnd()+1 >=r.getStart()){
     		  rv=new RegionVector();
     		  rv.getVector().add(new Region(r.getStart(),region.getEnd()+1));
-    		  System.out.println("3");
+    		  //System.out.println("3");
     		  continue;
 
     	  }
     	  else if(region.getStart() >= r.getStart() && region.getEnd()>= r.getEnd() &&  region.getStart() < r.getEnd()){
 
-    		  System.out.println("4");
+    		  //System.out.println("4");
     		  rv.getVector().add(new Region(region.getStart(),r.getEnd()));
     		  break ;
     	  }
 
 
       }
-
-
-
-
 
 
 		return rv;

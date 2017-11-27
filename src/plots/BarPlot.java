@@ -7,21 +7,31 @@ import java.util.Vector;
 
 public class BarPlot extends Plot{
 	private Vector<Double> x;
-	private Vector<Double> y;
+	private Vector<String> labels;
 	private String label;
-	private StringBuilder command;
-	private int breaks;
+	private String color = "blue";
 
 
 
 
-	public BarPlot(String title, String xlab, String ylab, Vector<Double> x, int breaks){
+	public BarPlot(String title, String xlab, String ylab, Vector<Double> x, Vector<String> labels){
 
 		super.setTitle(title);
 		super.setXlab(xlab);
 		super.setYlab(ylab);
 		this.x = x;
-		this.breaks = breaks;
+		this.labels=labels;
+
+	}
+	
+	public BarPlot(String title, String xlab, String ylab, Vector<Double> x, Vector<String> labels, String color){
+
+		super.setTitle(title);
+		super.setXlab(xlab);
+		super.setYlab(ylab);
+		this.x = x;
+		this.labels=labels;
+		this.color = color; 
 
 	}
 
@@ -44,23 +54,49 @@ public class BarPlot extends Plot{
 
 
 	public String generateCommand(String filename){
+		
+		
+		return generateCommandSummary(filename); 
+
+	}
+	
+	
+	public String generateCommandBasic(String filename){
 		File tmp = getTmpFile();
 		PlotUtils.writeVector(this.x, tmp);
-		//PlotUtils.writeVector(this.y,tmp,true);
+		String labelString = PlotUtils.writeLabels(this.labels);
 		StringBuilder command = new StringBuilder();
-
-
 		command.insert(0,String.format("jpeg(\"%s\",  width = 850, height = 800);", filename) );
 		command.append(String.format("x<-scan(\"%s\",nlines=1,skip=0);",tmp));
-		command.append("h<-hist(x,col=\"red\",");
-		command.append( String.format("main=\"%s\", xlab=\"%s\",ylab=\"%s\",breaks=%d);",super.title, super.xlab, super.ylab,this.breaks));
-		command.append("xfit<-seq(min(x),max(x),length=40) ; yfit<-dnorm(xfit,mean=mean(x),sd=sd(x)) ; yfit <- yfit*diff(h$mids[1:2])*length(x) ; lines(xfit, yfit, col=\"blue\", lwd=2); ");
+		command.append(String.format("data <- matrix(x,ncol=%d,byrow=TRUE);",this.x.size()));
+		command.append("data<-as.table(data);");
+		command.append(String.format("colnames(data)<-%s;",labelString));
+		command.append("barplot(data,");
+		command.append( String.format("col=\"%s\",main=\"%s\", xlab=\"%s\",ylab=\"%s\");",this.color, super.title, super.xlab, super.ylab));
 		command.append( "dev.off();");
-
 		return command.toString();
+		
 	}
 
 
+	public String generateCommandSummary(String filename){
+		File tmp = getTmpFile();
+		PlotUtils.writeVector(this.x, tmp);
+		String labelString = PlotUtils.writeLabels(this.labels);
+		StringBuilder command = new StringBuilder();
+		command.insert(0,String.format("jpeg(\"%s\",  width = 850, height = 800);", filename) );
+		command.append(String.format("x<-scan(\"%s\",nlines=1,skip=0);",tmp));
+		command.append(String.format("data <- matrix(x,ncol=3,byrow=TRUE);",this.x.size()));
+		command.append("data<-as.table(data);");
+		command.append("rownames(data)<-c(\"Rest\",\"no Mutations\",\"Region with a length > 5\");");
+
+		command.append(String.format("colnames(data)<-%s;",labelString));
+		command.append("barplot(data,legend.text = TRUE, ");
+		command.append( String.format("col=c(\"green\",\"blue\",\"red\"),main=\"%s\", xlab=\"%s\",ylab=\"%s\");", super.title, super.xlab, super.ylab));
+		command.append( "dev.off();");
+		return command.toString();
+		
+	}
 
 
 
@@ -96,11 +132,11 @@ public class BarPlot extends Plot{
 	public void setX(Vector<Double> x) {
 		this.x = x;
 	}
-	public Vector<Double> getY() {
-		return y;
+	public Vector<String> getLabels() {
+		return labels;
 	}
-	public void setY(Vector<Double> y) {
-		this.y = y;
+	public void setY(Vector<String> labels) {
+		this.labels = labels;
 	}
 	public String getLabel() {
 		return label;

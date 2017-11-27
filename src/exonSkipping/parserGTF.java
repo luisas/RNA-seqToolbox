@@ -12,7 +12,7 @@ public class parserGTF {
 	static HashMap<String, Gene> genes = new HashMap<String, Gene>();
 
 
-	public static void parse(String filename) {
+	public static Annotation parse(String filename) {
 
 
 		//Initialize array ans hashmap
@@ -59,30 +59,30 @@ public class parserGTF {
 			        //System.out.println(Arrays.asList(tokenizedRow));
 			        //System.out.println(Collections.singletonList(attributes));
 
-	 //-----------------------GENE
-			        if(tokenizedRow[2].equals("gene")) {
-
-			        			addGene(tokenizedRow, attributes);
-
-
-			        }
-		//----------------TRANSCRIPT
-			        else if(tokenizedRow[2].equals("transcript")) {
-
-
-			        	//Save the id in the gene list
-			        	if(!genes.containsKey(attributes.get("gene_id"))){
-
-			        		addGene(tokenizedRow, attributes);
-
-			        	}
-
-
-			        	addTranscript(tokenizedRow, attributes);
-
-			        }
+//	 //-----------------------GENE
+//			        if(tokenizedRow[2].equals("gene")) {
+//
+//			        			addGene(tokenizedRow, attributes);
+//
+//
+//			        }
+//		//----------------TRANSCRIPT
+//			        else if(tokenizedRow[2].equals("transcript")) {
+//
+//
+//			        	//Save the id in the gene list
+//			        	if(!genes.containsKey(attributes.get("gene_id"))){
+//
+//			        		addGene(tokenizedRow, attributes);
+//
+//			        	}
+//
+//
+//			        	addTranscript(tokenizedRow, attributes);
+//
+//			        }
 			  //----------------EXON
-			        else if(tokenizedRow[2].equals("exon")) {
+			        if(tokenizedRow[2].equals("exon")) {
 
 
 
@@ -129,9 +129,10 @@ public class parserGTF {
 				}
 			}
 
-			Runner.annotation.setGenes(genes);
-			readSimulator.Runner.GTFannotation.setGenes(genes);
-			readSimulator.Utils.annotation.setGenes(genes);
+			//Runner.annotation.setGenes(genes);
+			//readSimulator.Runner.GTFannotation.setGenes(genes);
+			//readSimulator.Utils.annotation.setGenes(genes);
+
 
 
 
@@ -139,6 +140,7 @@ public class parserGTF {
 			e.printStackTrace();
 		}
 
+		return new Annotation(genes);
 	}
 
 	public static void addGene(String tokenizedRow[],HashMap<String, String> attributes ) {

@@ -12,6 +12,7 @@ import exonSkipping.Utilities;
 
 
 /**
+ * NOT USED!!!
  * Saves the reads inside the Fragments hashMap.
  * This can be then used to retrieve the informations needed for the final output.
  *
@@ -113,8 +114,8 @@ public class ReadCreator {
 							 MutatedSeq mRW = new MutatedSeq(readSequenceRW,mutationrate);
 
 							 //STORE READS
-							 RegionVector genPosFW = Utils.getGenomicRV( startFW+startPosition, stopFW+startPosition,  geneID,  t,  GTFannotation);
-							 RegionVector genPosRW = Utils.getGenomicRV( startRW+startPosition, stopRW+startPosition,  geneID,  t,  GTFannotation);
+							 RegionVector genPosFW = Utils.getGenomicRV( startFW+startPosition, stopFW+startPosition,transcript,gene.getStrand());
+							 RegionVector genPosRW = Utils.getGenomicRV( startRW+startPosition, stopRW+startPosition,transcript,gene.getStrand());
 
 							 Read RW = new Read("+", startRW, stopRW, mRW,genPosRW);
 							 Read FW = new Read("-", startFW, stopFW, mFW,genPosFW);

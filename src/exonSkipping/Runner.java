@@ -14,11 +14,10 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-import plots.PlotUtils;
 
 public class Runner {
 
-	static Annotation annotation= new Annotation();
+	static Annotation annotation;
 	static Vector<Double> max_exons;
 	static Vector<Double> max_bases;
 
@@ -26,7 +25,6 @@ public class Runner {
 	public static String outputfile ;
 
 	public static void main(String[] args) {
-
 
 		//Read command line parameters
 
@@ -41,7 +39,7 @@ public class Runner {
 			if (cmd.hasOption("o") && cmd.hasOption("gtf")){
 			String myFileName = cmd.getOptionValue("gtf");
 			outputfile= cmd.getOptionValue("o");
-			parserGTF.parse(myFileName);
+			annotation = parserGTF.parse(myFileName);
 			}
 			else{
 				System.out.println();

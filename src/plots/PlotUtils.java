@@ -94,12 +94,9 @@ public class PlotUtils {
 			e.printStackTrace();
 		}
 
-
-
-
 	}
 
-	public static void writeVector( Vector<Double> x, File file, Boolean bol) {
+	public static void writeVector( Vector x, File file, Boolean bol) {
 
 		FileWriter fos;
 		try {
@@ -109,7 +106,7 @@ public class PlotUtils {
 
 			dos.print("\n");
 			String prefix = "";
-			for(Double d: x){
+			for(Object d: x){
 
 				sb.append(prefix);
 				sb.append(d.toString());
@@ -128,6 +125,24 @@ public class PlotUtils {
 	}
 
 
+	public static String writeLabels( Vector<String> x) {
+
+		StringBuilder sb = new StringBuilder();
+		String prefix = "";
+		sb.append("c(");
+		for(String s : x){
+
+			sb.append(prefix);
+			sb.append("\"");
+			sb.append(s);
+			sb.append("\"");
+
+			prefix= ",";
+		}
+		sb.append(")");
+
+		return sb.toString();
+	}
 
 
 

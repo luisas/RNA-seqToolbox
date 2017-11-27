@@ -7,6 +7,16 @@ public class Annotation {
 
 	private HashMap<String,Gene > genes;
 
+	public Annotation(){
+
+		this.genes = new HashMap<String,Gene>()
+;
+	}
+	public Annotation(HashMap<String, Gene> genes) {
+		super();
+		this.genes = genes;
+	}
+
 
 	Gene getGeneById(String id) {
 

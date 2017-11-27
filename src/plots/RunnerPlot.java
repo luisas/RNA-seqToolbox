@@ -15,7 +15,7 @@ import java.util.Vector;
 
 public class RunnerPlot {
 
-
+	static boolean fancy = true ; 
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 
@@ -30,7 +30,8 @@ public class RunnerPlot {
 	public static void plotExercise2(String outputDir) throws FileNotFoundException, IOException{
 
 		//file with all information: to be changed everytime!
-		HashMap<String,Vector<Double>> results = retrieveInformationPlot2("/home/proj/biosoft/praktikum/genprakt/ReadSimulator/output/read.mappinginfo");
+		String input = "/home/s/santus/Desktop/output/read.mappinginfo"; 
+		HashMap<String,Vector<Double>> results = retrieveInformationPlot2(input);
 
 		//results.get("fragmentLength")
 		HistogramPlot histoFragments = new HistogramPlot("Fragment length distribution", "Fragment length"," Count", results.get("fragmentLength"),10);
@@ -39,7 +40,22 @@ public class RunnerPlot {
 		HistogramPlot histoMut = new HistogramPlot("Mutation distribution pro read", "Number of mutations"," Count", results.get("mutations"),5);
 		histoMut.plot(outputDir+"/mutationDistribution.jpeg");
 
-		//BarPlot barp = new BarPlot("Summary", )
+		Vector<String> myLabels = new Vector<String>();
+		myLabels.add("All reads");
+		myLabels.add("non splitted");
+		if(!fancy){
+			myLabels.add("non splitted & no mutated");
+		}
+		myLabels.add("splitted");
+		
+		if(!fancy){
+			myLabels.add("splitted and no mutated");
+			myLabels.add("split, no mutated and with at least 5 length regions");
+		}
+		
+
+		BarPlot barp = new BarPlot("Summary of file "+ input+"","","",results.get("barPlot"),myLabels,"blue" );
+		barp.plot(outputDir+"/summary.jpeg");
 
 
 	}
@@ -49,53 +65,91 @@ public class RunnerPlot {
 		HashMap<String,Vector<Double>> result = new HashMap<String,Vector<Double>>();
 
 
+		String a = "";
+
+		String[] b = a.split("-");
+
+		System.out.println(b.length);
+
+		System.out.println(b[0]=="");
 		/*
 		 * GET FRAGMENTS for fragment length distribution
 		 */
 		//read the file and save all the fragments
 		Vector<Double> fragments = new Vector<Double>();
 		Vector<Double> mutations = new Vector<Double>();
-		Vector<Double> barPlot = new Vector<Double>(); 
-		
-		double countRead = 0.0; 
-		double nonSplit = 0.0; 
-		double nonSplitnoMis = 0.0; 
-		double split = 0.0; 
-		double splitMis = 0.0; 
+		Vector<Double> barPlot = new Vector<Double>();
+
+		double countRead = 0.0;
+		double nonSplit = 0.0;
+		double nonSplitnoMis = 0.0;
+		double split = 0.0;
+		double splitnoMis = 0.0;
+		double atLeast =0.0;
 		try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
 			String currentLine;
 			String[] splittedLine;
 			while ((currentLine = br.readLine()) != null ) {
 				if(!currentLine.startsWith("read")) {
-					splittedLine = currentLine.split("\t",2);
-					
-					//FRAGMENT LENGTH 
+					splittedLine = currentLine.split("\t",-1);
+
+					//FRAGMENT LENGTH
 					double startFragment = Integer.parseInt(splittedLine[4].split("-")[0]);
 					double stopFragment = Integer.parseInt(splittedLine[5].split("-")[1]);
 					fragments.add(stopFragment-startFragment+1);
 
-					
+
 					//MUTATIONS
 					double fwmut;
 					double rwmut;
-					if(splittedLine.length == 8 ){
-						mutations.add(0.0);
+
+					fwmut  = splittedLine[8].split(",").length;
+					rwmut  = splittedLine[9].split(",").length;
+					if(splittedLine[8].length() == 0){ fwmut=0;  }
+					if(splittedLine[9].length() == 0){ rwmut=0; }
+					mutations.add(rwmut);
+					mutations.add(fwmut);
+
+
+					//FW
+
+					if(splittedLine[6].split("\\|").length > 1 ){
+						split++;
+						if(fwmut==0){
+							splitnoMis++;
+							if(atLeast5(splittedLine[6])){atLeast++;};
+						}
+
+					}else{
+						nonSplit++;
+						if(fwmut==0){
+							nonSplitnoMis++;
+						}
 					}
-					else if(splittedLine.length == 9){
-						fwmut  = splittedLine[7].split(",").length;
-						mutations.add(fwmut);
+
+					//BW
+					if(splittedLine[7].split("\\|").length > 1 ){
+						split++;
+						if(rwmut==0){
+							splitnoMis++;
+							if(atLeast5(splittedLine[6])){atLeast++;};
+						}
+					}else{
+						nonSplit++;
+
+						if(rwmut==0){
+
+							nonSplitnoMis++;
+						}
 					}
-					else if(splittedLine.length == 10){
-						rwmut  = splittedLine[7].split(",").length;
-						fwmut  = splittedLine[8].split(",").length;
-						mutations.add(rwmut);
-						mutations.add(fwmut);
-					}
+
+
 
 					//READS
-					countRead++; 
+					countRead++;
+					countRead++;
 
-					
+
 				}
 			}
 		}catch(IOException e) {
@@ -103,21 +157,51 @@ public class RunnerPlot {
 		}
 		result.put("fragmentLength",fragments);
 		result.put("mutations", mutations);
+
+		barPlot.add(countRead);
 		
-		barPlot.add(countRead); 
-		result.put("barPlot", barPlot); 
+		if(fancy){
+			barPlot.add(nonSplit-nonSplitnoMis);
+			barPlot.add(split-splitnoMis-atLeast);
+			barPlot.add(0.0);		
+		}
+		else{
+			barPlot.add(nonSplit);
+			barPlot.add(split);
+			
+		}
+		
 
-
-
-
-
-
+		if(fancy){
+			barPlot.add(nonSplitnoMis);
+			barPlot.add(splitnoMis-atLeast);
+			barPlot.add(0.0);
+			barPlot.add(0.0);			
+		}else{
+			barPlot.add(nonSplitnoMis);
+			barPlot.add(splitnoMis);
+		}
+		barPlot.add(atLeast);
+		result.put("barPlot", barPlot);
 
 
 		return result;
 	}
 
 
+	public static boolean atLeast5(String string){
+
+
+		for(String region : string.split("\\|")){
+
+			if(!((Integer.parseInt(region.split("-")[1])-Integer.parseInt(region.split("-")[0])) > 5)){
+				return false;
+			}
+
+		}
+		return true;
+
+	}
 
 
 	//Needed for exercise one : to be checked that some dirs actually exist!

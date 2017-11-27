@@ -31,7 +31,7 @@ import exonSkipping.Transcript;
 
 public class Runner {
 
-	public static Annotation GTFannotation= new Annotation();
+	public static Annotation GTFannotation;
 
 
 	static int length;
@@ -55,7 +55,7 @@ public class Runner {
 		readCommandLine(args);
 
 		//PARSE THE GTF FILE
-		exonSkipping.parserGTF.parse(gtf);
+		GTFannotation = exonSkipping.parserGTF.parse(gtf);
 
 		//Genome Sequence Extractor
 		 ge = new GenomeSequenceExtractor(new File(fasta), new File(fidx));
@@ -136,6 +136,7 @@ public static void printOutput() throws IOException{
 					 int stopFW = length;
 					 readSequenceFW = fragmentSequence.substring(0, length);
 
+						
 
 					 //GET RW READ SEQUENCE
 					 int stopRW=FL;
@@ -145,14 +146,13 @@ public static void printOutput() throws IOException{
 					 //GET MUTATED SEQUENCES
 					 MutatedSeq mFW = new MutatedSeq(readSequenceFW,mutationrate);
 					 MutatedSeq mRW = new MutatedSeq(readSequenceRW,mutationrate);
-
 					 //STORE READS
 					 //System.out.println("tstart"+ startFW+startPosition);
-					 RegionVector genPosFW = Utils.getGenomicRV( startFW+startPosition, stopFW+startPosition,  geneID,  t,  GTFannotation);
+					 RegionVector genPosFW = Utils.getGenomicRV( startFW+startPosition, stopFW+startPosition,transcript,gene.getStrand());
 
 					 //System.out.println("-----start: "+startRW+startPosition);
 					 //System.out.println("--------stop : "+stopRW+startPosition);
-					 RegionVector genPosRW = Utils.getGenomicRV( startRW+startPosition, stopRW+startPosition,  geneID,  t,  GTFannotation);
+					 RegionVector genPosRW = Utils.getGenomicRV( startRW+startPosition, stopRW+startPosition,transcript,gene.getStrand());
 
 					 Read RW = new Read("-", startRW, stopRW, mRW,genPosRW);
 					 Read FW = new Read("+", startFW, stopFW, mFW,genPosFW);
