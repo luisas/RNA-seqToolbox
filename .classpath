@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
-	<classpathentry kind="lib" path="/home/s/santus/Downloads/commons-cli-1.4/commons-cli-1.4-tests.jar"/>
-	<classpathentry kind="lib" path="/home/s/santus/Downloads/commons-cli-1.4/commons-cli-1.4-test-sources.jar"/>
-	<classpathentry kind="lib" path="/home/s/santus/Downloads/commons-cli-1.4/commons-cli-1.4-sources.jar"/>
-	<classpathentry kind="lib" path="/home/s/santus/Downloads/commons-cli-1.4/commons-cli-1.4-javadoc.jar"/>
-	<classpathentry kind="lib" path="/home/s/santus/Downloads/commons-cli-1.4/commons-cli-1.4.jar"/>
-	<classpathentry kind="lib" path="/home/s/santus/Downloads/commons-math3-3.6.1/commons-math3-3.6.1.jar"/>
-	<classpathentry kind="lib" path="/home/s/santus/Downloads/commons-math3-3.6.1/commons-math3-3.6.1-tools.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="lib" path="/Users/luisasantus/Downloads/commons-math3-3.2.jar"/>
+	<classpathentry kind="lib" path="/Users/luisasantus/Desktop/cartella senza titolo/run/runnable/commons-cli-1.4-javadoc.jar"/>
+	<classpathentry kind="lib" path="/Users/luisasantus/Desktop/cartella senza titolo/run/runnable/commons-cli-1.4-sources.jar"/>
+	<classpathentry kind="lib" path="/Users/luisasantus/Desktop/cartella senza titolo/run/runnable/commons-cli-1.4-test-sources.jar"/>
+	<classpathentry kind="lib" path="/Users/luisasantus/Desktop/cartella senza titolo/run/runnable/commons-cli-1.4-tests.jar"/>
+	<classpathentry kind="lib" path="/Users/luisasantus/Desktop/cartella senza titolo/run/runnable/commons-cli-1.4.jar"/>
+	<classpathentry kind="lib" path="/Users/luisasantus/Desktop/cartella senza titolo/run/runnable/commons-math3-3.2.jar"/>
+	<classpathentry kind="lib" path="/Users/luisasantus/Downloads/commons-math-2.2-sources.jar"/>
+	<classpathentry kind="lib" path="/Users/luisasantus/sam-1.77.jar"/>
+	<classpathentry kind="lib" path="/Users/luisasantus/Downloads/jar_files (1)/htsjdk-2.13.1.jar"/>
+	<classpathentry kind="lib" path="/Users/luisasantus/Desktop/cartella senza titolo 2/AugmentedTree.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

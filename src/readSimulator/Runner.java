@@ -118,10 +118,10 @@ public static void printOutput() throws IOException{
 					//CALC FRAGMENT LENGTH
 
 					 int ndSample = (int) nd.sample();
-					 FL = Integer.max(length, ndSample);
+					 FL = Math.max(length, ndSample);
 					 while(FL >= transcript.getRegionVectorExons().getRegionsLength()){
 						 ndSample = (int) nd.sample();
-						 FL = Integer.max(length, ndSample);
+						 FL = Math.max(length, ndSample);
 					 }
 
 					 //GET RANDOM START POSITION

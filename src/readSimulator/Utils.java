@@ -28,24 +28,30 @@ public class Utils {
 	public static Annotation annotation;
 
 
-	/*
-	 * MAIN TO TEST
-	 */
-//	public static void main(String[] args){
-//
-//		//GTF file to parse
-//		String gtf= "/home/proj/biosoft/praktikum/genprakt/ReadSimulator/Homo_sapiens.GRCh37.75.gtf";
-//		annotation = exonSkipping.parserGTF.parse(gtf);
-//
-//		String gene = "ENSG00000183091";
-//		String transcript = "ENST00000427231";
-//
-//		RegionVector rv1 = getGenomicRV( 175,250,gene, transcript,annotation);
-//		System.out.println(Utils.prettyRegionVector(rv1));
-//
-//		RegionVector rv2 = getGenomicRV( 2025,2100,"ENSG00000162946","ENST00000439617",annotation);
-//		System.out.println(Utils.prettyRegionVector(rv2));
-//	}
+    public static RegionVector getRV(int start, int stop, RegionVector exons, String strand) {
+    	
+		RegionVector rv = new RegionVector();
+
+		int Gstart = start;
+		int Gstop = getGenomicPosition(stop,exons);
+
+		//Get intersections
+		Region genomicRegion = new Region(Gstart, Gstop);
+	    Collections.sort(exons.getVector());
+		rv = exons.getIntersect(genomicRegion);
+
+
+		if(rv.getVector().size()==0){
+			rv.getVector().add(new Region(Gstart,Gstop));
+		}
+
+		return rv;
+    		
+    	
+   
+    }
+
+
 
 	public static RegionVector getGenomicRV(int start, int stop, Transcript transcript,String strand){
 
@@ -80,7 +86,7 @@ public class Utils {
 	}
 
 
-	private static int getGenomicPosition(int position, Transcript transcript) {
+	public static int getGenomicPosition(int position, Transcript transcript) {
 		Vector<Integer> transcriptPositions =getPositionVector(transcript);
 	    Collections.sort(transcriptPositions);
 	    Collections.sort(transcript.getRegionVectorExons().getVector());
@@ -98,6 +104,23 @@ public class Utils {
 		return transcript.getRegionVectorExons().getElement(index).getStart() + supplement;
 	}
 
+	public static int getGenomicPosition(int position, RegionVector exons) {
+		Vector<Integer> transcriptPositions =getPositionVector(exons);
+	    Collections.sort(transcriptPositions);
+	    Collections.sort(exons.getVector());
+
+	    int index = Collections.binarySearch(transcriptPositions,position);
+
+	    if(index<0){
+	    	index++;
+	    	index++;
+	    	index=Math.abs(index);
+	    }
+
+        int supplement = position -transcriptPositions.get(index);
+
+		return exons.getElement(index).getStart() + supplement;
+	}
 
 
 	public static Vector<Integer> getPositionVector(Transcript transcript){
@@ -116,7 +139,21 @@ public class Utils {
 
 	}
 
+	public static Vector<Integer> getPositionVector(RegionVector exons){
 
+	    Collections.sort(exons.getVector());
+
+		Vector<Integer> v = new Vector<Integer>();
+		int cumLength = 0 ;
+
+		for(Region r :exons.getVector()){
+				v.add(cumLength);
+				cumLength+=r.getLength();
+		}
+
+		return v;
+
+	}
 
 
 	/**

@@ -67,7 +67,7 @@ public class HistogramPlot extends Plot {
 
 	private File getTmpFile() {
 		// TODO Auto-generated method stub
-		File tempDir = new File(Config.getConfig("tmpdir"));
+		File tempDir = new File(Config.getConfig("tmpdir",null));
 		File tmp = null;
 		try {
 			tmp = File.createTempFile("TEMP",".tsv", tempDir );

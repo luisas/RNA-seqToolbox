@@ -6,9 +6,10 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Vector;
 
+import augmentedTree.IntervalTree;
 import readSimulator.Utils;
 
-public class RegionVector {
+public class RegionVector extends IntervalTree{
 
 	private Vector<Region> vector;
 

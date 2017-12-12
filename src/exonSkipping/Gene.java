@@ -1,12 +1,15 @@
 package exonSkipping;
 
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import augmentedTree.AInterval;
 
-public class Gene {
+
+public class Gene implements Comparable<Gene> {
 
 	private String id;
 	private String name;
@@ -26,7 +29,7 @@ public class Gene {
 
 
 	public Gene() {
-		super();
+	   super();
 	}
 
 
@@ -368,6 +371,20 @@ public class Gene {
 
 	public void setNtrans(int ntrans) {
 		this.ntrans = ntrans;
+	}
+
+	public static Comparator<Gene> comparatorRegions = new Comparator<Gene>() {
+	    @Override
+	    public int compare(Gene left, Gene right) {
+	        return left.getStart() - right.getStart(); // use your logic
+	    }
+	};
+
+
+	@Override
+	public int compareTo(Gene o) {
+		// TODO Auto-generated method stub
+		return this.getStart() - o.getStart();
 	}
 
 

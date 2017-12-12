@@ -82,7 +82,7 @@ public class ReadCreator {
 							//CALC FRAGMENT LENGTH
 							 int ndSample = (int) nd.sample();
 
-							 FL = Integer.max(length, ndSample);
+							 FL = Math.max(length, ndSample);
 
 							 //System.out.println("ND SAMPLE"+ndSample);
 							 //GET RANDOM START POSITION

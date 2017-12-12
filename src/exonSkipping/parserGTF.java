@@ -162,6 +162,7 @@ public static void addTranscript(String tokenizedRow[],HashMap<String, String> a
 
      genes.get(attributes.get("gene_id")).getTranscripts().put(attributes.get("transcript_id"), transcript);
 		genes.get(attributes.get("gene_id")).getRegionVectorTranscripts().getVector().add(r);
+		//System.out.println(genes.get(attributes.get("gene_id")).getRegionVectorTranscripts().getVector());
 		genes.get(attributes.get("gene_id")).updateStartStop(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
 
 
@@ -199,6 +200,7 @@ public static void addCds(String tokenizedRow[],HashMap<String, String> attribut
 	genes.get(attributes.get("gene_id")).updateStartStop(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
 	genes.get(attributes.get("gene_id")).getTranscripts().get(attributes.get("transcript_id")).updateStartStop(Integer.parseInt(tokenizedRow[3]), Integer.parseInt(tokenizedRow[4]));
 }
+
 
 
 
