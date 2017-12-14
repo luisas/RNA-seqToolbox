@@ -1,9 +1,13 @@
 package bamFeatures;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import readSimulator.Utils;
 
+import exonSkipping.Annotation;
+import exonSkipping.Gene;
 import exonSkipping.Region;
 import exonSkipping.RegionVector;
 import exonSkipping.Transcript;
@@ -24,22 +28,32 @@ public class bamAnnotation {
 	private boolean antisense;
 	private int pcrindex;
 
+	private Annotation GTFannotation;
 
 
-	public bamAnnotation(SAMRecord fw, SAMRecord rw) {
+
+
+
+
+	public bamAnnotation(SAMRecord fw, SAMRecord rw, Annotation GTFannotation) {
 		super();
 
-		if(rw.getFirstOfPairFlag()) {
+		if(rw.getMateNegativeStrandFlag()) {
 			SAMRecord temp = fw;
 			fw = rw;
 			rw= temp;
 		}
 
-
+		this.GTFannotation = GTFannotation;
 		this.readId = fw.getReadName();
 		this.mm = getSumMM(fw,rw);
 		this.clippingCount=getSumClippingCount(fw,rw);
 		this.splitCount = calcSplitCount(fw,rw);
+		this.geneCount = calcGeneCount(fw,rw,GTFannotation);
+//		this.transcripts = calcTranscripts(fw,rw);
+//		this.gdist = calcgdist(fw,rw);
+//		this.antisense = calcAntisense(fw,rw);
+//		this.pcrindex = calcPCRindex(fw,rw);
 	}
 
 
@@ -59,6 +73,70 @@ public class bamAnnotation {
 		this.antisense = antisense;
 		this.pcrindex = pcrindex;
 	}
+
+
+
+
+	   /*
+	    * GENE COUNT
+	    */
+
+
+	   public int calcGeneCount(SAMRecord fw, SAMRecord rw, Annotation GTFannotation){
+
+		   Region g;
+		   System.out.println("::::::::::::::::::::::::::::::");
+		   System.out.println(fw.getAlignmentStart()+"             "+rw.getAlignmentEnd());
+		   System.out.println(fw.getMateNegativeStrandFlag());
+
+		   for(AlignmentBlock ab: fw.getAlignmentBlocks()){
+			   int ref_s  = ab.getReferenceStart();
+			   int ref_e = ref_s + ab.getLength();
+
+			   Region g_ref = new Region(ref_s, ref_e);
+
+			   System.out.println(ref_s+" "+ ref_e);
+		   }
+		   System.out.println("change");
+		   for(AlignmentBlock ab: rw.getAlignmentBlocks()){
+			   int ref_s  = ab.getReferenceStart();
+			   int ref_e = ref_s + ab.getLength();
+			   Region g_ref = new Region(ref_s, ref_e);
+			   System.out.println(ref_s+" "+ ref_e);
+		   }
+
+		   Region r = new Region(fw.getAlignmentStart(),rw.getAlignmentEnd());
+
+
+
+		   List<Gene> genes = new ArrayList<Gene>();
+		   for(Gene gene :  GTFannotation.getGenes().values() ) {
+
+				g = new Region(gene.getStart(), gene.getStop());
+				//within one gene (part of a gene)
+				if(g.getStart() <= r.getStart()  && g.getEnd() >= r.getEnd() && fw.getReferenceName().equals(gene.getChr())) {
+
+					System.out.println(r.getStart()+"---"+ r.getEnd()+"-----"+ gene.getId());
+
+					genes.add(gene);
+					for(Transcript transcript : gene.getTranscripts().values()){
+						Region t = new Region(transcript.getStart(),transcript.getStop());
+						System.out.println("transcript "+t.getStart()+ " "+t.getEnd() );
+						if(t.getStart() <= r.getStart()  && t.getEnd() >= r.getEnd()){
+							RegionVector exons_t = transcript.getRegionVectorExons(); 
+							System.out.println(Utils.prettyRegionVector(exons_t));
+						}
+					}
+					
+				}
+
+		   }
+		   System.out.println(genes.size());
+		   if(genes.size() == 0 ){
+			   System.out.println("intergenic");
+		   }
+		   return genes.size();
+	   }
 
 
 
@@ -125,9 +203,9 @@ public class bamAnnotation {
 	   System.out.println(Utils.prettyRegionVector(exons.merge()));
 
 	   //RegionVector introns = exons.merge().inverse();
-	   boolean split_inc = check_if_split_inconsistent(exons.merge());
+	   boolean split_inc = check_if_split_inconsistent(exons);
 	   if(split_inc){
-		   return -1 ; 
+		   return -1 ;
 	   }
 	   return exons.merge().getNumberRegion()-1;
    }
@@ -135,14 +213,18 @@ public class bamAnnotation {
    public boolean check_if_split_inconsistent(RegionVector exons) {
 
 	   RegionVector introns = exons.inverse();
+	   System.out.println(Utils.prettyRegionVector(exons));
+	   System.out.println("introns");
+	   System.out.println(Utils.prettyRegionVector(introns));
+
+
 	   boolean endsAtBeginning = false;
 	   boolean beginsAtEnd = false;
 	   boolean after = false;
-
 	   boolean onefound = false ;
 
 //	   if(exons.getVector().size()<=2){
-//		   return false; 
+//		   return false;
 //	   }
 	   for(Region i : introns.getVector()){
 
@@ -151,14 +233,17 @@ public class bamAnnotation {
 			  if(i.getEnd() == r1.getStart()){
 				  endsAtBeginning = true;
 				  onefound = true ;
-				  continue;
 			  }
 			  if(onefound){
-				  if(i.getStart() == r1.getEnd()){
-					  beginsAtEnd = true;
-					  after = true ;
+				  for(Region r2 : exons.getVector()){
+					  if(i.getStart() == r2.getEnd()){
+						  beginsAtEnd = true;
+						  after = true ;
+					  }
+					  break;
 				  }
-				  break;
+
+
 			  }
 		   }
 
@@ -168,13 +253,16 @@ public class bamAnnotation {
 	   System.out.println("beginsAtEnd " + beginsAtEnd);
 	   System.out.println("endsAt beginning "+ endsAtBeginning);
 	   System.out.println("after " + after);
-	   if(!endsAtBeginning || !beginsAtEnd || !after){
+	   if(!endsAtBeginning && !beginsAtEnd && !after){
 		   return true ;
 	   }
 
 
 	   return false;
    }
+
+
+
 
 
 	public String getReadId() {

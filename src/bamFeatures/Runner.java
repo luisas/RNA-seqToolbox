@@ -61,12 +61,12 @@ public class Runner  {
 //        }
 
 
-        System.out.println("-----------------------------");
+        //System.out.println("-----------------------------");
         //System.out.println(getGenes("XIV",694361,695188));
-        System.out.println("-----------------------------");
+        //System.out.println("-----------------------------");
 
 		//readBam
-		System.out.println("/....");
+		//System.out.println("/....");
 		readBAM();
 		//print results
 		printoutResult();
@@ -97,15 +97,16 @@ public class Runner  {
 			//CASE: We have a read pair;
 			if(other_seen!=null) {
 				c++;
-				
 
-				if(sr.getReadName().equals("3875347") ||sr.getReadName().equals("4767871")  ) {
 
-					ba=new bamAnnotation(sr,lookup.get(sr.getReadName()));
+				if(sr.getReadName().equals("4778753") ||sr.getReadName().equals("1093326")  ) {
+
+					ba=new bamAnnotation(sr,lookup.get(sr.getReadName()),GTFannotation);
 					System.out.print(sr.getReadName()+"\t");
 					System.out.print(ba.getMm()+"\t");
 					System.out.print(ba.getClippingCount()+"\t");
 					System.out.print(ba.getSplitCount()+"\t");
+					System.out.print(ba.getGeneCount()+"\t");
 					System.out.println();
 //					Iterator i = sr.getAlignmentBlocks().iterator();
 //					while(i.hasNext()){
@@ -188,11 +189,23 @@ public class Runner  {
 			PrintWriter dos = new PrintWriter(fos);
 
 			for(String key : bamAnnotation.keySet()){
-				//dos.print(bamAnnotation.get(key).);
+				dos.print(key+"\t");
+				dos.print("mm:"+bamAnnotation.get(key).getMm()+"\t");
+				dos.print("clipping:"+bamAnnotation.get(key).getClippingCount()+"\t");
+				dos.print("nsplit:"+bamAnnotation.get(key).getSplitCount()+"\t");
+				//to do
+				dos.print("antisense:"+bamAnnotation.get(key).getSplitCount()+"\t");
+				//todo
+				dos.print("pcrindex:"+0+"\t");
+
+
+				dos.print("\n");
 				System.out.print(key+"\t");
 				System.out.println(bamAnnotation.get(key).getMm()+"\t");
 				System.out.println(bamAnnotation.get(key).getClippingCount()+"\t");
 				System.out.println(bamAnnotation.get(key).getSplitCount()+"\t");
+				System.out.println("gcount:"+bamAnnotation.get(key).getGeneCount()+"\t");
+
 			}
 
 			fos.close();
