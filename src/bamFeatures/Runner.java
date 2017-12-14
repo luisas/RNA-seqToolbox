@@ -27,66 +27,56 @@ import exonSkipping.Region;
 import exonSkipping.parserGTF;
 
 public class Runner  {
-	
-	static String o; 
-	static String gtf; 
+
+	static String o;
+	static String gtf;
 	static String bam;
 	static String frstrand;
-	static HashMap<String, bamAnnotation> bamAnnotation  = new HashMap<String, bamAnnotation>(); 
-	static Annotation GTFannotation; 
+	static HashMap<String, bamAnnotation> bamAnnotation  = new HashMap<String, bamAnnotation>();
+	static Annotation GTFannotation;
 	//static KeyedIntervalForest<Gene ,String> lookup;
 
-	
+
 	public static void main(String[] args) {
-		
+
 		//Read command Line
 		readCommandLine(args);
-		
-		
+
+
 		//GTF file annotation
 		GTFannotation = parserGTF.parse(gtf);
-		
-	//GTFannotation.getGenes().values().forEach((g)->g.getRegionVectorTranscripts().getVector().forEach((r)->System.out.println(r.getStart()+"-"+r.getEnd()+";   ")));
-		
+		//GTFannotation.getGenes().values().forEach((g)->g.getRegionVectorTranscripts().getVector().forEach((r)->System.out.println(r.getStart()+"-"+r.getEnd()+";   ")));
 		//System.exit(0);
 		System.out.println("-----------------------------");
 
-	
 		//IntervalTree<Gene> intervalTree = new IntervalTree<Gene>();
-//        lookup = new KeyedIntervalForest<Gene,String>( (g)-> g.getChr(), (g)->g.getStart(), (g)->g.getStop());	
+//        lookup = new KeyedIntervalForest<Gene,String>( (g)-> g.getChr(), (g)->g.getStart(), (g)->g.getStop());
 //        List<Gene> list = new ArrayList<Gene>(GTFannotation.getGenes().values());
 //        Collections.sort(list);
 //        for(Gene gene : list ) {
 //        	  System.out.println("CHR"+ gene.getChr()+"START "+gene.getStart()+ "-STOP: "+gene.getStop());
 //        	  lookup.factory.tree.add(gene);
 //        	  System.out.println("lookup size: "+lookup.factory.tree.size());
-//        	 
+//
 //        }
-        
-        
+
+
         System.out.println("-----------------------------");
-      //  System.out.println(getGenes("XIV",694361,695188));
+        //System.out.println(getGenes("XIV",694361,695188));
         System.out.println("-----------------------------");
-        
-		
-	
-		
-		
+
 		//readBam
 		System.out.println("/....");
-		readBAM(); 
-		
+		readBAM();
 		//print results
 		printoutResult();
-		
-		
 	}
-	
-	
+
+
 	public static void readBAM() {
-		
+
 		HashMap<String, SAMRecord> lookup = new HashMap<String , SAMRecord>();
-		
+
 		SAMFileReader sam_reader = new SAMFileReader(new File(bam),false);
 		sam_reader.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
 		Iterator<SAMRecord> it = sam_reader.iterator();
@@ -96,12 +86,9 @@ public class Runner  {
 		PrintWriter dos;
 		bamAnnotation ba= null;
 		String tmpChr= "-1";
-		try {
-			dos = new PrintWriter(new FileWriter(new File("/Users/luisasantus/Desktop/bam/provaID2")));
-
 		while(it.hasNext()) {
 
-	
+
 			SAMRecord sr = it.next();
 			SAMRecord other_seen = lookup.get(sr.getReadName());
 			if(tmpChr.equals("-1")) {
@@ -109,30 +96,31 @@ public class Runner  {
 			}
 			//CASE: We have a read pair;
 			if(other_seen!=null) {
-				dos.print(sr.getReadName()+"\n");
 				c++;
-
-
-				if(sr.getReadName().equals("1410682")) {
-					
-					ba=new bamAnnotation(sr,lookup.get(sr.getReadName()));
-					System.out.println(sr.getReadName());
-					System.out.println(sr.getReadName());
-					System.out.println(ba.getMm());
-					System.out.println(ba.getClippingCount());
-					Iterator i = sr.getAlignmentBlocks().iterator();
-					while(i.hasNext()){
-						AlignmentBlock ab= (AlignmentBlock) i.next();
-						System.out.println(ab.getReferenceStart()+" "+ab.getReadStart()+" "+ab.getLength());
-						AlignmentBlock ab1= lookup.get(sr.getReadName()).getAlignmentBlocks().get(0);
-						System.out.println(ab1.getReferenceStart()+" "+ab1.getReadStart()+" "+ab1.getLength());
-						//GTFannotation.
-					}
 				
+
+				if(sr.getReadName().equals("3875347") ||sr.getReadName().equals("4767871")  ) {
+
+					ba=new bamAnnotation(sr,lookup.get(sr.getReadName()));
+					System.out.print(sr.getReadName()+"\t");
+					System.out.print(ba.getMm()+"\t");
+					System.out.print(ba.getClippingCount()+"\t");
+					System.out.print(ba.getSplitCount()+"\t");
+					System.out.println();
+//					Iterator i = sr.getAlignmentBlocks().iterator();
+//					while(i.hasNext()){
+//						//AlignmentBlock ab= (AlignmentBlock) i.next();
+//						//System.out.println(ab.getReferenceStart()+" "+ab.getReadStart()+" "+ab.getLength());
+//						//AlignmentBlock ab1= lookup.get(sr.getReadName()).getAlignmentBlocks().get(0);
+//						//System.out.println(ab1.getReferenceStart()+" "+ab1.getReadStart()+" "+ab1.getLength());
+//						System.out.println();
+//						//GTFannotation.
+//					}
+
 
 				}
-				
-				
+
+
 				//dos.print(ba.getReadId()+"\t");
 				//dos.print("mm: "+ba.getMm()+"\t");
 				//dos.print("clipping: "+ba.getClippingCount()+"\t");
@@ -142,14 +130,14 @@ public class Runner  {
 //					dos.print("nsplit:"+ba.getSplitCount());
 //				}
 //				dos.print(ba.getGeneCount());
-//				
-//				
+//
+//
 //				dos.print("gdist:"+ba.getGeneCount());
 //				dos.print("antisense"+ba.isAntisense());
 //				dos.print("pcrindex:"+ba.getPcrindex());
 				//dos.print("\n");
-			
-				
+
+
 			}
 			if(check_if_we_can_ignore(sr)) {
 				skipped++;
@@ -157,33 +145,27 @@ public class Runner  {
 			}else {
 				lookup.put(sr.getReadName(), sr);
 			}
-			
+
 			//Clear lookup if chromosome changes
 			if(!tmpChr.equals(sr.getReferenceName())) {
 				lookup.clear();
 			}
 			tmpChr=sr.getReferenceName();
-			
-			
-			
+
+
+
 		}
-		
-		dos.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	
+
 		System.out.println("COUNT "+c);
 		System.out.println("SKIPEPD "+skipped);
 
-		
-		
+
+
 	}
-	
+
 
 	public static boolean check_if_we_can_ignore(SAMRecord sr) {
-		
+
 		Region r= new Region(Math.min(sr.getAlignmentStart(),sr.getMateAlignmentStart()),Math.max(sr.getAlignmentStart(),sr.getMateAlignmentStart()));
 		//IF UNMAPPED
 		if(sr.getReadUnmappedFlag()) { return true; }
@@ -196,7 +178,7 @@ public class Runner  {
 		//Check if integenic
 		if(strangeGenomicRegion(r)) {return true;}
 		//Different chromosomes
-		return false; 
+		return false;
 	}
 	public static void printoutResult() {
 		File filename = new File(o);
@@ -204,32 +186,34 @@ public class Runner  {
 		try {
 			fos = new FileWriter(filename);
 			PrintWriter dos = new PrintWriter(fos);
-			
+
 			for(String key : bamAnnotation.keySet()){
-				System.out.println(key);
-				
+				//dos.print(bamAnnotation.get(key).);
+				System.out.print(key+"\t");
+				System.out.println(bamAnnotation.get(key).getMm()+"\t");
+				System.out.println(bamAnnotation.get(key).getClippingCount()+"\t");
+				System.out.println(bamAnnotation.get(key).getSplitCount()+"\t");
 			}
-			
-			
+
 			fos.close();
-			dos.close(); 
+			dos.close();
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 
-		
-		
+
+
+
 	}
-	
-	
+
+
 //	if(last == null) {
-//		last =g; 
+//		last =g;
 //		continue;
 //	}
-	
+
 //	else if(g.getStart() >= r.getStart() && g.getEnd() >= r.getEnd()){
 //	cog= true;
 //}
@@ -242,54 +226,54 @@ public class Runner  {
 //}
 
 
-//last =g;	
+//last =g;
 //	if(g.overlap(r)>0) {
 //	cog=true;
 //}
-	
+
 //	Vector<Region> v = new Vector<Region>();
 //	RegionVector a = new RegionVector(v);
 //	for(Gene g : GTFannotation.getGenes().values()) {
 //		v.add(new Region(g.getStart(), g.getStop()));
 //	}
-//	
+//
 //	Collections.sort(v,a.getComparator());
-	
+
 	public static boolean strangeGenomicRegion(Region r) {
-		
+
 		//conains genes and not part of any
 		boolean wog= false;
 		boolean cog=false;
-		Region g ; 
+		Region g ;
 		for(Gene gene :  GTFannotation.getGenes().values() ) {
-			
+
 			g = new Region(gene.getStart(), gene.getStop());
-			
-			//within one gene (part of a gene) 
+
+			//within one gene (part of a gene)
 			if(g.getStart() <= r.getStart() && g.getEnd() >= r.getEnd()) {
 				wog=true;
 				//intergenic read
 			}
-			
-			//contains one gene (includes at least one gene) 
+
+			//contains one gene (includes at least one gene)
 			else if(g.getStart() >= r.getStart() && g.getEnd() <= r.getEnd()) {
 				cog =true;
 			}
-		
+
 		}
-		
+
 		if( !wog && cog ) {
 			return true;
 		}
 		return false;
 	}
-	
+
 	public static void readCommandLine(String[] args) {
 
 		try {
 			Options options = new Options();
-			options.addOption("frstrand", false, "If not given the experiment\n" + 
-					"is strand unspecific, if true the first read maps sense to the transcribed region, if false the\n" + 
+			options.addOption("frstrand", false, "If not given the experiment\n" +
+					"is strand unspecific, if true the first read maps sense to the transcribed region, if false the\n" +
 					"first read maps antisense to the transcribed region.");
 			options.addOption("bam", true, "bam file path");
 			options.addOption("gtf", true, "gtf file");
@@ -302,11 +286,11 @@ public class Runner  {
 
 			// TODO check if all param!
 			if (cmd.hasOption("o") && cmd.hasOption("bam") && cmd.hasOption("gtf") ){
-			
+
 				o = cmd.getOptionValue("o");
 				bam = cmd.getOptionValue("bam");
 				gtf=cmd.getOptionValue("gtf");
-				
+
 				if(cmd.hasOption("frstrand")) {
 					frstrand=cmd.getOptionValue("frstrand");
 				}else {
@@ -318,8 +302,8 @@ public class Runner  {
 				System.out.println("The programm was invoked with wrong parameters");
 				System.out.println();
 				System.out.println("Correct Usage: ");
-				System.out.println("\t \t -frstrand If not given the experiment\\n\" + \n" + 
-						"					\"is strand unspecific, if true the first read maps sense to the transcribed region, if false the\\n\" + \n" + 
+				System.out.println("\t \t -frstrand If not given the experiment\\n\" + \n" +
+						"					\"is strand unspecific, if true the first read maps sense to the transcribed region, if false the\\n\" + \n" +
 						"					\"first read maps antisense to the transcribed region");
 				System.out.println("\t \t -bam <path/to/your/bamfile>");
 				System.out.println("\t \t -gtf <path/to/your/gtffile>");
@@ -333,13 +317,13 @@ public class Runner  {
 		System.err.println("Error Reading the command line parameters!");
 		e.printStackTrace();
 	}
-	
+
 
 
 }
-	
+
 //	public static Iterator<Gene> getGenes(String chr, int start, int stop ){
-//		
+//
 //		//Collection<Gene> c = lookup.getIntersecting(chr,start,stop) ;
 //		//System.out.println(c.size());
 //		return  c.iterator();

@@ -14,6 +14,7 @@ public class Config {
 	public static void init(){
 		configurations.put("R","/usr/bin/R");
 		configurations.put("tmpdir","/home/s/santus/Desktop/temp");
+
 	}
 	
 	
