@@ -44,6 +44,84 @@ public class RegionVector extends IntervalTree{
 
 	}
 
+	
+	public RegionVector cut(int a , int b) {
+		RegionVector result = new RegionVector();
+		
+		for(Region r : this.getVector()) {
+			if(r.getStart()>=a && r.getEnd() <= b) {
+				result.getVector().add(r);
+			}
+			//FIRST ONE
+			else if(r.getStart()<=a && r.getEnd()>=a ) {
+//				System.out.println("-----------------------------");
+//				System.out.println(r.getStart()+ " "+r.getEnd());
+//				System.out.println("-----------------------------");
+
+				//first
+				if( r.getEnd() <= b) {
+					result.getVector().add(new Region(a,r.getEnd()));
+				}else {
+					result.getVector().add(new Region(a,b));
+				}
+
+			}
+			else if (r.getStart()>=a  && r.getEnd() >= b) {
+				result.getVector().add(new Region(r.getStart(),b));
+			}
+		}
+		
+		
+		return result; 
+		
+		
+	}
+	
+	public boolean isConsistent(RegionVector rv) {
+		//rv is the big one 
+		
+//		System.out.println("RV "+ Utils.prettyRegionVector(rv));
+//		System.out.println("CUT "+ Utils.prettyRegionVector(rv.cut(this.getStart(), this.getStop())));
+//	System.out.println("THIS "+ Utils.prettyRegionVector(this));
+		if(rv.cut(this.getStart(), this.getStop()).equals(this.merge())) {
+	
+			
+			
+			return true; 
+		}
+		
+
+			return false; 
+		
+		
+		
+		
+//		boolean found = false; 
+//		int indexBig = 0 ; 
+//		int indexSmall =0 ; 
+//		for(Region r2 : rv.vector) {
+//			indexBig++; 
+//			indexSmall =0 ; 
+//			for(Region r : this.vector) {
+//				indexSmall++;
+//				if(r.getStart()!=r2.getStart()) {
+//					found =true; 
+//				}
+//				
+//				if(found) {
+//					
+//					if(r.getStart()!=r2.getStart()) {
+//						
+//					}
+//				}
+//			}
+//		}
+//		if(!found) {
+//			return false; 
+//		}
+//		
+//		return true; 
+	}
 	public RegionVector getIntersect(Region r){
 
 	RegionVector rv = new RegionVector();
@@ -110,6 +188,89 @@ public class RegionVector extends IntervalTree{
 	}
 
 
+	
+	 public boolean isMergedContained(RegionVector rv) {
+		   
+		 boolean regionContained = false; 
+		 for(Region r : this.getVector()) {
+			 regionContained =false;
+			 for(Region big : rv.getVector()) {
+				 if(r.getStart() >= big.getStart() && r.getEnd() <= big.getEnd()) {
+					 regionContained=true; 
+				 }
+			 }
+			 if(!regionContained) {
+				 return false; 
+			 }
+		 }
+		 
+		 return true; 
+		   
+	 }
+	 
+	 
+		@Override
+		public int hashCode() {
+		    final int prime = 31;
+		    int result = 1;
+		    for(Region r : this.getVector()) {
+		    	 result = prime * result + r.getStart();
+		    	 result = prime * result + r.getEnd();
+		    }
+		    
+		    return result;
+		}
+	
+	   @Override
+	public boolean equals(Object o) {
+		   
+		// TODO Auto-generated method stub
+		   boolean got = false; 
+		   RegionVector rv = (RegionVector ) o;
+		   
+		   int size = rv.getVector().size();
+		   
+		   
+		   for (int i = 0 ; i < size ; i ++) {
+			   Region r = rv.getVector().get(i);
+			   Region v = this.getVector().get(i);
+			   if(v.getStart() !=  r.getStart() || v.getEnd() !=r.getEnd()) {
+				   return false;
+			   }
+		   }
+		   return true; 
+		   
+//		  for(Region r : this.getVector()) {
+//			  got = false; 
+//			  for(Region v : rv.getVector()) {
+//				  if(v.getStart() !=  r.getStart() || v.getEnd() !=r.getEnd()) {
+//					  System.out.println(v.getStart()+ "  "  +r.getStart());
+//					  System.out.println(v.getEnd()+ "  "  +r.getEnd());
+//					  //got = true;
+//					  return false; 
+//				  }
+//			  }
+////			  if(!got) {
+////				  return false; 
+////			  }
+//		  }
+//		   
+//		  //System.out.println(Utils.prettyRegionVector(rv) +"-----------" + Utils.prettyRegionVector(this )); 
+//		return true;
+	}
+
+
+	public boolean contained(RegionVector rv) {
+		   
+		   //rv big one
+		   
+		   for(Region r : this.getVector()) {
+			   if(!rv.getVector().contains(r)) {
+				   return false; 
+			   }
+		   }
+		   return true; 
+	   }
 
 	public int getRegionsLength(){
 

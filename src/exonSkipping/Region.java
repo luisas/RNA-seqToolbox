@@ -22,7 +22,9 @@ public class Region implements Comparable<Region>{
 	public int hashCode() {
 	    final int prime = 31;
 	    int result = 1;
+	    
 	    result = prime * result + start;
+	    
 	    result = prime * result + end;
 	    return result;
 	}
@@ -40,10 +42,11 @@ public class Region implements Comparable<Region>{
 
 	}
 	
+	//little brute force!
 	public int overlap(Region r) {
 		
-	 int max_end = Math.max(r.getEnd(), this.getEnd());
-	 int min_end = Math.min(r.getEnd(), this.getEnd());
+	 int max_end = Math.max(r.getEnd(), this.getEnd()+1);
+	 int min_end = Math.min(r.getEnd(), this.getEnd()+1);
 	 int min_start= Math.min(r.getStart(), this.getStart());
 	 int max_start= Math.max(r.getStart(), this.getStart());
 	 int result = max_end-min_start-(max_end-min_end)-(max_start-min_start);
@@ -80,6 +83,13 @@ public class Region implements Comparable<Region>{
 		return this.getStart()-o.getStart();
 	}
 
-
+//	public boolean overlap(Region r) {
+//		if(this.getStart() < r.getEnd() || this.getEnd() > r.getStart() ) {
+//			return true;
+//		}
+//		
+//		
+//		return false; 
+//	}
 
 }

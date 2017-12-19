@@ -1,4 +1,5 @@
-package bamFeatures;
+package bam;
+
 
 import java.io.File;
 import java.io.FileWriter;
@@ -12,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.sf.samtools.*;
+import readSimulator.Utils;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -24,10 +26,12 @@ import augmentedTree.KeyedIntervalForest;
 import exonSkipping.Annotation;
 import exonSkipping.Gene;
 import exonSkipping.Region;
+import exonSkipping.RegionVector;
 import exonSkipping.parserGTF;
 
-public class Runner  {
+public class BamRunner  {
 
+	static boolean test = false; 
 	static String o;
 	static String gtf;
 	static String bam;
@@ -35,10 +39,14 @@ public class Runner  {
 	static HashMap<String, bamAnnotation> bamAnnotation  = new HashMap<String, bamAnnotation>();
 	static Annotation GTFannotation;
 	//static KeyedIntervalForest<Gene ,String> lookup;
-
-
+	static HashMap<RegionVector,List<String>> mapGRV = new  HashMap<RegionVector,List<String>>();
+	
+	
+	
+	
 	public static void main(String[] args) {
 
+	
 		//Read command Line
 		readCommandLine(args);
 
@@ -48,7 +56,7 @@ public class Runner  {
 		//GTFannotation.getGenes().values().forEach((g)->g.getRegionVectorTranscripts().getVector().forEach((r)->System.out.println(r.getStart()+"-"+r.getEnd()+";   ")));
 		//System.exit(0);
 		
-
+		//System.out.println(Utils.prettyRegionVector(GTFannotation.getGenes().get("YAL060W").getRegionVectorTranscripts()));
 		//IntervalTree<Gene> intervalTree = new IntervalTree<Gene>();
 //        lookup = new KeyedIntervalForest<Gene,String>( (g)-> g.getChr(), (g)->g.getStart(), (g)->g.getStop());
 //        List<Gene> list = new ArrayList<Gene>(GTFannotation.getGenes().values());
@@ -66,9 +74,29 @@ public class Runner  {
         //System.out.println("-----------------------------");
 
 		//readBam
+//		Region a = new Region (1,2);
+//		Region a1 = new Region (1,10);
+//		Region b1 = new Region (1,10);
+//		Region b = new Region (1,2);
+//		RegionVector rv  = new RegionVector();
+//		RegionVector rv1  = new RegionVector();
+//		rv.getVector().add(a);
+//		rv.getVector().add(a1);
+//		rv1.getVector().add(b);
+//		rv1.getVector().add(b1);
+//		HashMap<RegionVector, Integer> map =  new HashMap<RegionVector, Integer>(); 
+//		map.put(rv, 0);
+//		//System.out.println(rv.equals(rv1));
+//		//System.out.println("/....");
+//		//System.out.println(rv1.hashCode());
+//
+//		System.out.println(map.containsKey(rv1));
+//		
+//		System.exit(0);
 		//System.out.println("/....");
 		readBAM();
 		//print results
+
 		printoutResult();
 	}
 
@@ -99,12 +127,59 @@ public class Runner  {
 				c++;
 
 				//ba=new bamAnnotation(sr,lookup.get(sr.getReadName()),GTFannotation);
+	if(!test) {	
+		
+				ba=new bamAnnotation(sr,lookup.get(sr.getReadName()),GTFannotation,frstrand);
+				bamAnnotation.put(sr.getReadName(),ba);
 				
-				//ba=new bamAnnotation(sr,lookup.get(sr.getReadName()),GTFannotation);
-				//bamAnnotation.put(sr.getReadName(),ba);
-				if(sr.getReadName().equals("3175654")    ) {
+			
+				
+				if(mapGRV.containsKey(ba.getGrv())) {
+
+			
+					ba.setPcrindex( mapGRV.get(ba.getGrv()).size());
+					//System.out.println(ba.getPcrindex());
+					mapGRV.get(ba.getGrv()).add(sr.getReadName());
+				}
+				else {
+
 					
-					ba=new bamAnnotation(sr,lookup.get(sr.getReadName()),GTFannotation);
+					ba.setPcrindex(0);
+					//System.out.println(sr.getReadName());
+					if(sr.getReadName().equals("4543444")    ) {
+						
+						
+						for(RegionVector rv : mapGRV.keySet()) {
+							if(rv.getStart() > 140000 && rv.getStop()< 180000) {
+							System.out.println(Utils.prettyRegionVector(rv));
+							}
+						}
+						
+						System.out.println("----------------");
+						System.out.println("KEY "+Utils.prettyRegionVector(ba.getGrv()));
+					}
+					List<String> a = new ArrayList<String>();
+					a.add(sr.getReadName());
+					mapGRV.put(ba.getGrv(),a);	
+					//System.out.println(mapGRV.keySet());
+				}
+		
+	}			
+				
+			//	System.out.println(sr.getReadName()+ " "+ mapGRV.keySet().size());
+				if(sr.getReadName().equals("3069190")    ) {
+					
+//					System.out.println("luisa");
+//					//System.out.println(Utils.prettyRegionVector(ba.getGrv()));
+//					System.out.println("::::::::::::::::::::::::::::::::::::::::::::::::::");
+//					for(RegionVector a : mapGRV.keySet()) {
+//						if(a.getStart()<150000 && a.getStart()>140000) {
+//						System.out.println(Utils.prettyRegionVector(a));
+//						}
+//					}
+//					System.out.println("-------");
+
+					ba=new bamAnnotation(sr,lookup.get(sr.getReadName()),GTFannotation,frstrand);
 					//bamAnnotation.put(sr.getReadName(),ba);
 					System.out.print(sr.getReadName()+"\t");
 					if(ba.isSplitInconsistent()) {
@@ -125,7 +200,6 @@ public class Runner  {
 					
 					System.out.println(ba.getPcrindex()+"\t");
 					
-					System.out.println("---------------------------------");
 //					Iterator i = sr.getAlignmentBlocks().iterator();
 //					while(i.hasNext()){
 //						//AlignmentBlock ab= (AlignmentBlock) i.next();
@@ -181,7 +255,19 @@ public class Runner  {
 
 
 	}
-
+	
+	public static void updatePCR()
+	{
+		int size = 0 ; 
+		for(List<String> values : mapGRV.values()) {
+			size = values.size();
+			for(String id: values) {
+				bamAnnotation.get(id).setPcrindex(size);
+			}
+			
+		}
+		
+	}
 
 	public static boolean check_if_we_can_ignore(SAMRecord sr) {
 

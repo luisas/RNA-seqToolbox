@@ -1,4 +1,5 @@
 package exonSkipping;
+import java.util.Collections;
 import java.util.HashMap;
 
 
@@ -132,6 +133,7 @@ public class Transcript {
 
 
 	public RegionVector getRegionVectorExons() {
+		Collections.sort(regionVectorExons.getVector());
 		return regionVectorExons;
 	}
 
