@@ -66,6 +66,8 @@ public class Gene implements Comparable<Gene> {
 		this.regionVectorTranscripts = regionVectorTranscripts;
 	}
 
+	
+
 
 	public Set<ExonSkipping> calculateExonSkipping(){
 
@@ -215,6 +217,43 @@ public class Gene implements Comparable<Gene> {
 		return result;
 	}
 
+	
+	
+	   public RegionVector getAllExons() {
+		   
+		   RegionVector results = new RegionVector(); 
+		   
+		
+		   for(Transcript transcript : this.getTranscripts().values()) {
+			   for(int i =0 ; i < transcript.getRegionVectorExons().getVector().size();i++ ) {
+				   results.getVector().add(transcript.getRegionVectorExons().getVector().get(i));
+			   }
+			   
+		   }
+		   
+		   
+		   return results.merge(); 
+		   
+	   }
+	
+	   public RegionVector getAllExonsSkipped() {
+		   
+		   RegionVector results = new RegionVector(); 
+		   
+		
+		   for(Transcript transcript : this.getTranscripts().values()) {
+			   for(int i =1 ; i < transcript.getRegionVectorExons().getVector().size()-1;i++ ) {
+				   results.getVector().add(transcript.getRegionVectorExons().getVector().get(i));
+			   }
+			   
+		   }
+		   
+		   
+		   return results.merge(); 
+		   
+	   }
+	
+	
 
 	public int calcNTranscripts(Set<String> proteinId){
 		int number = 0 ;

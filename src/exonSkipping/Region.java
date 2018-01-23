@@ -41,7 +41,13 @@ public class Region implements Comparable<Region>{
 		}
 
 	}
-	
+	public boolean contains(Region r) {
+		if(this.getStart()<=r.getStart() && this.getEnd() >= r.getEnd()) {
+			return true;
+		}else {
+			return false; 
+		}
+	}
 	//little brute force!
 	public int overlap(Region r) {
 		

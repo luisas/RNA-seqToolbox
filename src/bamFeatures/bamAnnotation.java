@@ -187,7 +187,7 @@ public class bamAnnotation {
 		   return sb.toString();
 	   }
 	   
-	   public RegionVector getMergedRV(Gene gene) {
+	   public static RegionVector getMergedRV(Gene gene) {
 		   
 		   RegionVector transcripts = new RegionVector(); 
 		   
@@ -201,8 +201,27 @@ public class bamAnnotation {
 		   return transcripts.merge();
 		   
 	   }
+	   
+public static RegionVector getIntronsRead(SAMRecord fw) {
+		   
+		   RegionVector exons = new RegionVector();
+		   for(AlignmentBlock ab: fw.getAlignmentBlocks()){
+			   int ref_s  = ab.getReferenceStart();
+			   int ref_e = ref_s + ab.getLength();
 
-	   public RegionVector getIntronsReads(SAMRecord fw,SAMRecord rw) {
+			   Region g_ref = new Region(ref_s, ref_e);
+			   exons.getVector().add(g_ref);
+			   System.out.println(ref_s+" "+ ref_e);
+		   }
+
+		   
+		   System.out.println("exons: "+Utils.prettyRegionVector(exons));
+		   return exons.inverse();
+		   
+		   
+	   }
+
+	   public static RegionVector getIntronsReads(SAMRecord fw,SAMRecord rw) {
 		   
 		   RegionVector exons = new RegionVector();
 		   for(AlignmentBlock ab: fw.getAlignmentBlocks()){

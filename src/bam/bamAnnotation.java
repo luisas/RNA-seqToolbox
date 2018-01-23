@@ -255,7 +255,7 @@ public class bamAnnotation {
 	   }
 	   
 	   
-	   public Pair<HashMap<Gene,List<String>>, List<Gene>> clearMap(HashMap<Gene,List<String>> map , List<Gene> genes, boolean merge) {
+	   public static Pair<HashMap<Gene,List<String>>, List<Gene>> clearMap(HashMap<Gene,List<String>> map , List<Gene> genes, boolean merge) {
 		   
 		   for(Gene gene : genes) {
 			   if(map.containsKey(gene) ) {
@@ -282,7 +282,7 @@ public class bamAnnotation {
 		   
 	   }
 	   
-	public List<String> cleanValues(List<String> list , String a , String b ){
+	public static List<String> cleanValues(List<String> list , String a , String b ){
 		
 		List<String> result = new ArrayList<String>();
 		
@@ -324,7 +324,7 @@ public class bamAnnotation {
 	  
 	   
 	   
-	   public RegionVector getMergedRV(Gene gene) {
+	   public static RegionVector getMergedRV(Gene gene) {
 		   
 		   RegionVector transcripts = new RegionVector(); 
 		   
@@ -339,7 +339,7 @@ public class bamAnnotation {
 		   
 	   }
 	   
-	   public RegionVector getExonsReads(SAMRecord fw) {
+	   public static RegionVector getExonsReads(SAMRecord fw) {
 		   RegionVector exons1 = new RegionVector();
 
 		   for(AlignmentBlock ab: fw.getAlignmentBlocks()){

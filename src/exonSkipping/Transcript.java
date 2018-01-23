@@ -22,7 +22,21 @@ public class Transcript {
 		super();
 		// TODO Auto-generated constructor stub
 	}
-
+	   public RegionVector getAllExonsSkipped() {
+		   
+		   RegionVector results = new RegionVector(); 
+		   
+		
+			   for(int i =1 ; i < this.getRegionVectorExons().getVector().size()-1;i++ ) {
+				   results.getVector().add(this.getRegionVectorExons().getVector().get(i));
+			   }
+			   
+		   
+		   
+		   
+		   return results.merge(); 
+		   
+	   }
 	public Transcript(String id, String name, int start, int stop,
 			String geneId) {
 		super();

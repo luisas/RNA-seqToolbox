@@ -3,18 +3,98 @@ package exonSkipping;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
 
 import augmentedTree.IntervalTree;
 import readSimulator.Utils;
 
-public class RegionVector extends IntervalTree{
+public class RegionVector {
 
 	private Vector<Region> vector;
 
 
+	public RegionVector getAllLeftExons(Region exon) {
+		
+		RegionVector result = new RegionVector();
+		int i = 0 ; 
+		
+		int indexExon = -1 ; 
+		for(Region r : this.getVector()) {
+			if(r.equals(exon)) {
+				indexExon = i; 
+			}
+			i++;
+		}
+		for( int j = 0 ; j< indexExon ; j ++ ) {
+			
+			result.getVector().add(this.getElement(j));
+		}
+			
+		return result; 	
+		
+	}
+	
+	public RegionVector getAllRigthExons(Region exon) {
+		RegionVector result = new RegionVector();
+		int i = 0 ; 
+		
+		int indexExon = -1 ; 
+		for(Region r : this.getVector()) {
+			if(r.equals(exon)) {
+				indexExon = i; 
+			}
+			i++;
+		}
+		for( int j = indexExon ; j< this.getVector().size() ; j ++ ) {
+			
+			result.getVector().add(this.getElement(j));
+		}
+			
+		return result; 	
+	}
+	
+	
+	
 
+	public Region getLeftExon(Region exon) {
+		
+		int i = 0 ; 
+		
+		int indexExon = -1 ; 
+		for(Region r : this.getVector()) {
+			if(r.equals(exon)) {
+				indexExon = i; 
+			}
+			i++;
+		}
+		
+		
+		return this.vector.get(indexExon -1);
+		
+		
+	}
+	
+	
+	public Region getRightExon(Region exon) {
+		
+		HashMap<Integer, Region> map = new HashMap<Integer, Region>();
+		int i = 0 ; 
+		
+		int indexExon = -1 ; 
+		for(Region r : this.getVector()) {
+			if(r.equals(exon)) {
+				indexExon = i; 
+			}
+			i++;
+		}
+		
+		
+		return this.vector.get(indexExon +1 );
+		
+		
+	}
 	public RegionVector() {
 		super();
 		this.vector = new Vector<Region>();
@@ -44,6 +124,40 @@ public class RegionVector extends IntervalTree{
 
 	}
 
+	public RegionVector cut2(int a , int b) {
+		RegionVector result = new RegionVector();
+		
+		for(Region r : this.getVector()) {
+			
+			if(r.getStart()< b) {
+			if(r.getStart()>=a && r.getEnd() <= b) {
+				result.getVector().add(r);
+			}
+			//FIRST ONE
+			else if(r.getStart()<=a && r.getEnd()>=a ) {
+//				System.out.println("-----------------------------");
+//				System.out.println(r.getStart()+ " "+r.getEnd());
+//				System.out.println("-----------------------------");
+
+				//first
+				if( r.getEnd() <= b) {
+					result.getVector().add(new Region(a,r.getEnd()));
+				}else {
+					result.getVector().add(new Region(a,b));
+				}
+
+			}
+			else if (r.getStart()>=a  && r.getEnd() >= b) {
+				result.getVector().add(new Region(r.getStart(),b));
+			}
+			}
+		}
+		
+		
+		return result; 
+		
+		
+	}
 	
 	public RegionVector cut(int a , int b) {
 		RegionVector result = new RegionVector();
@@ -80,47 +194,25 @@ public class RegionVector extends IntervalTree{
 	public boolean isConsistent(RegionVector rv) {
 		//rv is the big one 
 		
-//		System.out.println("RV "+ Utils.prettyRegionVector(rv));
-//		System.out.println("CUT "+ Utils.prettyRegionVector(rv.cut(this.getStart(), this.getStop())));
-//	System.out.println("THIS "+ Utils.prettyRegionVector(this));
+		//System.out.println("RV "+ Utils.prettyRegionVector(rv));
+		//System.out.println("CUT "+ Utils.prettyRegionVector(rv.cut(this.getStart(), this.getStop())));
+	    //System.out.println("THIS "+ Utils.prettyRegionVector(this));
+
+	    RegionVector cut = rv.cut(this.getStart(), this.getStop()); 
+	    //System.out.println("CUT  "+cut);
+	    //cut.getNumberRegion();
+	   // System.out.println("CUT "+ Utils.prettyRegionVector(rv.cut(this.getStart(), this.getStop())));
+    if(cut.getNumberRegion()==0) {
+    		//System.out.println("-----------------------------------------");
+   		return false; 
+    }
 		if(rv.cut(this.getStart(), this.getStop()).equals(this.merge())) {
-	
-			
-			
 			return true; 
 		}
 		
 
-			return false; 
-		
-		
-		
-		
-//		boolean found = false; 
-//		int indexBig = 0 ; 
-//		int indexSmall =0 ; 
-//		for(Region r2 : rv.vector) {
-//			indexBig++; 
-//			indexSmall =0 ; 
-//			for(Region r : this.vector) {
-//				indexSmall++;
-//				if(r.getStart()!=r2.getStart()) {
-//					found =true; 
-//				}
-//				
-//				if(found) {
-//					
-//					if(r.getStart()!=r2.getStart()) {
-//						
-//					}
-//				}
-//			}
-//		}
-//		if(!found) {
-//			return false; 
-//		}
-//		
-//		return true; 
+	return false; 
+	
 	}
 	public RegionVector getIntersect(Region r){
 
@@ -260,6 +352,14 @@ public class RegionVector extends IntervalTree{
 	}
 
 
+	 public boolean contains(Region r) {
+		 for(Region region : this.getVector()) {
+			 if(region.equals(r)) {
+				 return true;
+			 }
+		 }
+		 return false; 
+	 }
 	public boolean contained(RegionVector rv) {
 		   
 		   //rv big one

@@ -27,6 +27,7 @@ import exonSkipping.Annotation;
 import exonSkipping.Gene;
 import exonSkipping.Region;
 import exonSkipping.RegionVector;
+import exonSkipping.Utilities;
 import exonSkipping.parserGTF;
 
 public class BamRunner  {
@@ -232,7 +233,7 @@ public class BamRunner  {
 
 
 			}
-			if(check_if_we_can_ignore(sr)) {
+			if(check_if_we_can_ignore(sr, GTFannotation)) {
 				skipped++;
 				continue;
 			}else {
@@ -269,20 +270,22 @@ public class BamRunner  {
 		
 	}
 
-	public static boolean check_if_we_can_ignore(SAMRecord sr) {
-
+	public static boolean check_if_we_can_ignore(SAMRecord sr, Annotation GTFannotation) {
 		Region r= new Region(Math.min(sr.getAlignmentStart(),sr.getMateAlignmentStart()),Math.max(sr.getAlignmentStart(),sr.getMateAlignmentStart()));
 		//IF UNMAPPED
-		if(sr.getReadUnmappedFlag()) { return true; }
-		//IF SECONDARY OR SUPPLEMENTARY
-		if(sr.getNotPrimaryAlignmentFlag()){ return true; }
+		if(sr.getReadUnmappedFlag()) { 	
+		return true; }
+		if(sr.getNotPrimaryAlignmentFlag()){
+		return true; }
 		//IF MATE UNMAPPED
-		if(sr.getMateUnmappedFlag()) {return true;}
+		if(sr.getMateUnmappedFlag()) {			
+		return true;}
 		//IF READ ON SAME STRAND
-		if(sr.getReadNegativeStrandFlag()==sr.getMateNegativeStrandFlag() ||  sr.getReferenceName()!=sr.getMateReferenceName()) { return true;}
+		if(sr.getReadNegativeStrandFlag()==sr.getMateNegativeStrandFlag() &&  sr.getReferenceName().equals(sr.getMateReferenceName())) { 
+		return true;}
 		//Check if integenic
-		if(strangeGenomicRegion(r, sr.getReferenceName())) {return true;}
-		//Different chromosomes
+		if(strangeGenomicRegion(r, sr.getReferenceName(), GTFannotation)) {
+		return true;}
 		return false;
 	}
 	public static void printoutResult() {
@@ -360,7 +363,7 @@ public class BamRunner  {
 //
 //	Collections.sort(v,a.getComparator());
 
-	public static boolean strangeGenomicRegion(Region r, String chr ) {
+	public static boolean strangeGenomicRegion(Region r, String chr, Annotation GTFannotation ) {
 
 		//conains genes and not part of any
 		boolean wog= false;

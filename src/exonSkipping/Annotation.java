@@ -18,7 +18,7 @@ public class Annotation {
 	}
 
 
-	Gene getGeneById(String id) {
+	public Gene getGeneById(String id) {
 
 		return genes.get(id);
 	}

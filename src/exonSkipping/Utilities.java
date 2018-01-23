@@ -7,9 +7,24 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 
+import net.sf.samtools.AlignmentBlock;
+import net.sf.samtools.SAMRecord;
+import readSimulator.Utils;
+
 public class Utilities {
 
 
+	
+	
+	public static void printRead(SAMRecord read) {
+		RegionVector rv = new RegionVector();
+		for(AlignmentBlock ab : read.getAlignmentBlocks()) {
+			rv.getVector().add(new Region(ab.getReferenceStart(), ab.getReferenceStart()+ab.getLength()));
+		}
+		System.out.println(Utils.prettyRegionVector(rv));
+	}
+	
+	
 	public  static StringBuilder prettySetRegionVector(Set<RegionVector> set){
 
 		RegionVector rv1 = new RegionVector();

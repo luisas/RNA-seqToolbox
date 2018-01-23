@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="/Users/luisasantus/Desktop/cartella senza titolo 2/AugmentedTree.jar"/>
-	<classpathentry kind="lib" path="/Users/luisasantus/Desktop/cartella senza titolo/run/runnable/commons-cli-1.4.jar"/>
-	<classpathentry kind="lib" path="/Users/luisasantus/Desktop/cartella senza titolo/run/runnable/commons-math3-3.2.jar"/>
 	<classpathentry kind="lib" path="/Users/luisasantus/sam-1.77.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java SE 8 [1.8.0_131]"/>
+	<classpathentry kind="lib" path="/Users/luisasantus/Desktop/GoBi/runnable/AugmentedTree.jar"/>
+	<classpathentry kind="lib" path="/Users/luisasantus/Desktop/GoBi/runnable/commons-cli-1.4.jar"/>
+	<classpathentry kind="lib" path="/Users/luisasantus/Desktop/GoBi/runnable/commons-math3-3.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
