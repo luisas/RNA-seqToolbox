@@ -3,6 +3,7 @@ package goSetEnrichment;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,7 +37,9 @@ public class goRunner {
 	
 	static HashMap<String,Pair<Double,Boolean>> enrichMap; 
 	
-	static List<String> eIds; 
+	static List<String> eIds;
+	
+	static HashMap<String, Node> id2node; 
 	
 	public static void main(String[] args ) {
 		
@@ -44,7 +47,7 @@ public class goRunner {
 		
 		
 		Pair<DAG, HashMap<String, Node>> pairDag=Parsers.parseObo(obo,root);
-		HashMap<String, Node> id2node = pairDag.second;
+		 id2node = pairDag.second;
 		dag = pairDag.first;
 		
 		
@@ -56,8 +59,9 @@ public class goRunner {
 		
 		//Overlap file if needed
 		if(!overlapout.equals("")) {
-			System.out.println("Overlap file written into: " +overlapout);
-			//writeOverlapFile(overlapout,dag);
+			//System.out.println("Overlap file written into: " +overlapout);
+			HashMap<String,Set<String>> go2gene = Utilities.getGOTerm2Gene(mappingMap,id2node);
+			writeOverlapFile(overlapout,go2gene);
 		}
 		
 		//parse enrich file
@@ -66,53 +70,10 @@ public class goRunner {
 		eIds=enrichOutputPair.second;
 		
 		
-		HashMap<String,Set<String>> mapTest = Utilities.getGOTerm2Gene(mappingMap,id2node);
-		for(String key :mapTest.keySet() ) {
-			if(key.equals("GO:0006612")|| key.equals("GO:0032271")) {
-			System.out.print(key + "\t");
-			System.out.print(mapTest.get(key).size()+"\t");
-			String prefix = "";
-			for(String value : mapTest.get(key)) {
-				System.out.print(prefix + value );
-				prefix=",";
-			}
-			System.out.println();
-			}
-		}
 		
-		//Find overlap 
-		for(String key :mapTest.keySet() ) {
-			//Filter size! in intervall [minsize,maxsize]
-			if(mapTest.get(key).size() >=minsize && mapTest.get(key).size()<=maxsize) {
-				
-				for(String key2 : mapTest.keySet()) {
-					if(mapTest.get(key2).size() >=minsize && mapTest.get(key2).size()<=maxsize) {
-						
-						
-						Set<String> intersection = new HashSet<String>(mapTest.get(key)); // use the copy constructor
-						intersection.retainAll(mapTest.get(key2));
-						
-						if(key.equals("GO:0006612") || key2.equals("GO:0006612")){
-							if(key.equals("GO:0032271") || key2.equals("GO:0032271")){
-								
-							if(intersection.size()>0) {
-							System.out.print(key +"\t");
-							System.out.print(key2+"\t");
-							System.out.println(intersection.size());
-							}
-							}
-						
-//						for(String s : intersection ) {
-//							System.out.println(s);
-//						}
-						}
-						
-					}
-					
-				}
-				
-			}	
-		}
+
+		
+
 		
 		
 
@@ -120,7 +81,7 @@ public class goRunner {
 	}
 	
 	
-	public static void writeOverlapFile(String filename , HashMap<String,List<String>> map) {
+	public static void writeOverlapFile(String filename , HashMap<String,Set<String>> go2gene) {
 		
 		FileWriter fos;
 		try {
@@ -128,9 +89,67 @@ public class goRunner {
 			PrintWriter dos = new PrintWriter(fos);
 			dos.print("term1\tterm2\tis_relative\tpath_length\tnum_overlapping\tmax_ov_percentage\n");
 			
-			for(String id : map.keySet()) {
-				//map.
-				
+			//Find overlap 
+			List<String> listKeys = new ArrayList<String>(go2gene.keySet()); 
+			//for(String key :go2gene.keySet() ) {
+			for(int index = 0 ; index < listKeys.size() ; index ++) {
+				String key = listKeys.get(index);
+				//Filter size! in intervall [minsize,maxsize]
+				if(go2gene.get(key).size() >=minsize && go2gene.get(key).size()<=maxsize && id2node.containsKey(key)) {
+					
+					
+					
+					//for(String key2 : go2gene.keySet()) {
+					for(int index2 = index+1 ; index2 < listKeys.size() ; index2 ++) {
+						String key2 = listKeys.get(index2);
+						if(!key2.equals(key) && go2gene.get(key2).size() >=minsize && go2gene.get(key2).size()<=maxsize && id2node.containsKey(key2)) {
+							
+							
+							Set<String> intersection = new HashSet<String>(go2gene.get(key)); // use the copy constructor
+							intersection.retainAll(go2gene.get(key2));
+							String term1;
+							String term2;
+							if(test) {
+							 term1="GO:0006612" ; 
+							term2 = "GO:0048259"; 
+							}else {
+								term1=key ; 
+								term2 = key2; 
+							}
+							if(key.equals(term1) || key2.equals(term1)){
+								if(key.equals(term2) || key2.equals(term2)){
+									
+								if(intersection.size()>0) {
+							
+									System.out.print(key +"\t");
+									System.out.print(key2+"\t");
+									System.out.print(Utilities.is_relative(term1, term2, id2node)+"\t");
+									System.out.print(Utilities.path_length(term1, term2, id2node) + "\t");
+									System.out.print(intersection.size() +"\t");
+									float perc1 = (float)intersection.size()/(float)go2gene.get(term1).size(); 
+									float perc2 = (float)intersection.size()/(float)go2gene.get(term2).size(); 
+									float max = Float.max(perc1, perc2)*100;
+									String maxWith2CommaValues = String.format ("%.2f", max);
+									System.out.print(maxWith2CommaValues.replaceAll(",", ".")+"\t");
+									System.out.println();
+									
+									
+									dos.print(key +"\t"+key2+"\t");
+									dos.print(Utilities.is_relative(term1, term2, id2node)+"\t");
+									dos.print(Utilities.path_length(term1, term2, id2node) + "\t");
+									dos.print(intersection.size() +"\t");
+									dos.println(maxWith2CommaValues.replaceAll(",", ".")+"\t");
+								}
+								}
+							
+
+							}
+							
+						}
+						
+					}
+					
+				}	
 			}
 			
 			
