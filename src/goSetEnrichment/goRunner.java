@@ -1,11 +1,21 @@
 package goSetEnrichment;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+
+import plots.Pair;
 
 public class goRunner {
 
@@ -20,24 +30,120 @@ public class goRunner {
 	static int minsize; 
 	static int maxsize; 
 
+	static DAG dag;  
+	//Gene-->List of GO:terms
+	static HashMap<String,List<String>> mappingMap; 
+	
+	static HashMap<String,Pair<Double,Boolean>> enrichMap; 
+	
+	static List<String> eIds; 
+	
 	public static void main(String[] args ) {
 		
 		readCommandLine(args);
 		
-		//Parsers.parseObo(obo);
 		
-		if(mappingtype.equals("ensembl")) {	
-			//Parsers.parseEnsembl(mapping);
+		Pair<DAG, HashMap<String, Node>> pairDag=Parsers.parseObo(obo,root);
+		HashMap<String, Node> id2node = pairDag.second;
+		dag = pairDag.first;
+		
+		
+		if(mappingtype.equals("ensembl")) {
+			mappingMap = Parsers.parseEnsembl(mapping);
 		}else if(mappingtype.equals("go")){
-			//Parsers.parseGaf(mapping);
+			mappingMap = Parsers.parseGaf(mapping);
 		}
-		Parsers.parseEnrich(enrich);
 		
+		//Overlap file if needed
+		if(!overlapout.equals("")) {
+			System.out.println("Overlap file written into: " +overlapout);
+			//writeOverlapFile(overlapout,dag);
+		}
+		
+		//parse enrich file
+		Pair<HashMap<String, Pair<Double, Boolean>>,List<String>> enrichOutputPair = Parsers.parseEnrich(enrich);
+		enrichMap= enrichOutputPair.first;
+		eIds=enrichOutputPair.second;
+		
+		
+		HashMap<String,Set<String>> mapTest = Utilities.getGOTerm2Gene(mappingMap,id2node);
+		for(String key :mapTest.keySet() ) {
+			if(key.equals("GO:0006612")|| key.equals("GO:0032271")) {
+			System.out.print(key + "\t");
+			System.out.print(mapTest.get(key).size()+"\t");
+			String prefix = "";
+			for(String value : mapTest.get(key)) {
+				System.out.print(prefix + value );
+				prefix=",";
+			}
+			System.out.println();
+			}
+		}
+		
+		//Find overlap 
+		for(String key :mapTest.keySet() ) {
+			//Filter size! in intervall [minsize,maxsize]
+			if(mapTest.get(key).size() >=minsize && mapTest.get(key).size()<=maxsize) {
+				
+				for(String key2 : mapTest.keySet()) {
+					if(mapTest.get(key2).size() >=minsize && mapTest.get(key2).size()<=maxsize) {
+						
+						
+						Set<String> intersection = new HashSet<String>(mapTest.get(key)); // use the copy constructor
+						intersection.retainAll(mapTest.get(key2));
+						
+						if(key.equals("GO:0006612") || key2.equals("GO:0006612")){
+							if(key.equals("GO:0032271") || key2.equals("GO:0032271")){
+								
+							if(intersection.size()>0) {
+							System.out.print(key +"\t");
+							System.out.print(key2+"\t");
+							System.out.println(intersection.size());
+							}
+							}
+						
+//						for(String s : intersection ) {
+//							System.out.println(s);
+//						}
+						}
+						
+					}
+					
+				}
+				
+			}	
+		}
+		
+		
+
 		
 	}
 	
 	
-	
+	public static void writeOverlapFile(String filename , HashMap<String,List<String>> map) {
+		
+		FileWriter fos;
+		try {
+			fos = new FileWriter(filename);
+			PrintWriter dos = new PrintWriter(fos);
+			dos.print("term1\tterm2\tis_relative\tpath_length\tnum_overlapping\tmax_ov_percentage\n");
+			
+			for(String id : map.keySet()) {
+				//map.
+				
+			}
+			
+			
+			
+			dos.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
+	}
 	
 	
 	
@@ -55,7 +161,7 @@ public class goRunner {
 			options.addOption("enrich", true, "simulation file");
 			options.addOption("minsize", true, "integer - minsize");
 			options.addOption("maxsize", true, "integer- maxsize");
-			options.addOption("overlapout", false, "overlap_out_tsv - optional");
+			options.addOption("overlapout", true, "overlap_out_tsv - optional");
 			
 
 			CommandLineParser parser = new DefaultParser();
@@ -76,7 +182,9 @@ public class goRunner {
 				enrich=cmd.getOptionValue("enrich");
 				mapping=cmd.getOptionValue("mapping");
 				if(cmd.hasOption("overlapout")) {
+					
 					overlapout = cmd.getOptionValue("overlapout");
+					
 				}
 				 
 			}
