@@ -57,11 +57,12 @@ public class goRunner {
 			mappingMap = Parsers.parseGaf(mapping);
 		}
 		
+		HashMap<String,Set<String>> go2gene = Utilities.getGOTerm2Gene(mappingMap,id2node);
 		//Overlap file if needed
 		if(!overlapout.equals("")) {
 			//System.out.println("Overlap file written into: " +overlapout);
-			HashMap<String,Set<String>> go2gene = Utilities.getGOTerm2Gene(mappingMap,id2node);
-			writeOverlapFile(overlapout,go2gene);
+			
+			//writeOverlapFile(overlapout,go2gene);
 		}
 		
 		//parse enrich file
@@ -69,18 +70,56 @@ public class goRunner {
 		enrichMap= enrichOutputPair.first;
 		eIds=enrichOutputPair.second;
 		
-		
-		
-
-		
-
-		
-		
-
+		//Final file 
+		writeOutputFile(o,go2gene);
 		
 	}
 	
-	
+	public static void writeOutputFile(String filename, HashMap<String,Set<String>> go2gene) {
+		FileWriter fos;
+		try {
+			fos = new FileWriter(filename);
+			PrintWriter dos = new PrintWriter(fos);
+			dos.print("term\tname\tsize\tis_true\tnoverlap\thg_pval\thg_fdr\tfej_pval\tfej_fdr\tks_stat\tks_pval\tks_fdr\tshortest_path_to_a_true\n");
+
+			
+			for(String key :go2gene.keySet() ) {
+				
+				if(go2gene.get(key).size() >=minsize && go2gene.get(key).size()<=maxsize && id2node.containsKey(key)) {
+					if(key.equals("GO:0051224")) {
+					System.out.print(key+"\t");
+					System.out.print(id2node.get(key).name+"\t");
+					Set<String> intersection = new HashSet<String>(go2gene.get(key)); // use the copy constructor
+					intersection.retainAll(enrichMap.keySet());
+					System.out.print(intersection.size()+"\t");
+					
+					if(eIds.contains(key)) {
+						System.out.print("true\t");
+					}else {
+						System.out.print("false\t");
+					}
+					//signif
+					int n = 0 ; 
+					for(String gene : go2gene.get(key) ) {
+						if(enrichMap.get(gene).second) {
+							n++;
+						}
+					}
+					System.out.print(n+"\t");
+					
+					System.out.println();
+					}
+				}
+			}
+			
+			dos.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
 	public static void writeOverlapFile(String filename , HashMap<String,Set<String>> go2gene) {
 		
 		FileWriter fos;
@@ -121,17 +160,17 @@ public class goRunner {
 									
 								if(intersection.size()>0) {
 							
-									System.out.print(key +"\t");
-									System.out.print(key2+"\t");
-									System.out.print(Utilities.is_relative(term1, term2, id2node)+"\t");
-									System.out.print(Utilities.path_length(term1, term2, id2node) + "\t");
-									System.out.print(intersection.size() +"\t");
+									//System.out.print(key +"\t");
+//									System.out.print(key2+"\t");
+//									System.out.print(Utilities.is_relative(term1, term2, id2node)+"\t");
+//									System.out.print(Utilities.path_length(term1, term2, id2node) + "\t");
+//									System.out.print(intersection.size() +"\t");
 									float perc1 = (float)intersection.size()/(float)go2gene.get(term1).size(); 
 									float perc2 = (float)intersection.size()/(float)go2gene.get(term2).size(); 
 									float max = Float.max(perc1, perc2)*100;
 									String maxWith2CommaValues = String.format ("%.2f", max);
-									System.out.print(maxWith2CommaValues.replaceAll(",", ".")+"\t");
-									System.out.println();
+//									System.out.print(maxWith2CommaValues.replaceAll(",", ".")+"\t");
+//									System.out.println();
 									
 									
 									dos.print(key +"\t"+key2+"\t");
