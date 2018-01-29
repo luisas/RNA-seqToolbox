@@ -16,6 +16,9 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import org.apache.commons.math3.distribution.HypergeometricDistribution;
+
+import differentialExpression.BenjaminiHochbergFDR;
 import plots.Pair;
 
 public class goRunner {
@@ -77,6 +80,31 @@ public class goRunner {
 	
 	public static void writeOutputFile(String filename, HashMap<String,Set<String>> go2gene) {
 		FileWriter fos;
+		int populationSize = enrichMap.size();
+		int p2 = go2gene.size();
+		Set<String> genes = new HashSet<String>();
+		for (Set<String> set : go2gene.values()) {
+			for(String s: set) {
+				genes.add(s);
+			}
+		}
+		System.out.println("genes size "+genes.size());
+		
+		Set<String> interse = new HashSet<String>(genes); 
+		interse.retainAll(enrichMap.keySet());
+		System.out.println("interse "+interse.size());
+		int degs =0;
+		
+		for(Pair<Double, Boolean> pair :enrichMap.values()) {
+			if(pair.second) {
+				degs++;
+			}
+		}
+		System.out.println("Population size: "+populationSize);
+		System.out.println("degs: "+degs);
+		
+
+		
 		try {
 			fos = new FileWriter(filename);
 			PrintWriter dos = new PrintWriter(fos);
@@ -86,26 +114,48 @@ public class goRunner {
 			for(String key :go2gene.keySet() ) {
 				
 				if(go2gene.get(key).size() >=minsize && go2gene.get(key).size()<=maxsize && id2node.containsKey(key)) {
-					if(key.equals("GO:0051224")) {
+					if(key.equals("GO:0051046")) {
+					//ID
 					System.out.print(key+"\t");
+					//NAME
 					System.out.print(id2node.get(key).name+"\t");
-					Set<String> intersection = new HashSet<String>(go2gene.get(key)); // use the copy constructor
+					//SIZE
+					Set<String> intersection = new HashSet<String>(go2gene.get(key)); 
 					intersection.retainAll(enrichMap.keySet());
+					int setSize = intersection.size();
 					System.out.print(intersection.size()+"\t");
 					
+					//is_true
 					if(eIds.contains(key)) {
 						System.out.print("true\t");
 					}else {
 						System.out.print("false\t");
 					}
 					//signif
-					int n = 0 ; 
+					int noverlap = 0 ; 
 					for(String gene : go2gene.get(key) ) {
+						if(enrichMap.containsKey(gene)) {
 						if(enrichMap.get(gene).second) {
-							n++;
+							noverlap++;
+						}
 						}
 					}
-					System.out.print(n+"\t");
+					System.out.print(noverlap+"\t");
+					
+					///----------------------STATISTICS
+					
+					
+					//hg_pval
+					HypergeometricDistribution hg = new HypergeometricDistribution( interse.size(),  degs,  setSize);
+					double hg_pval = hg.upperCumulativeProbability(noverlap);
+					System.out.print(hg_pval+"\t");
+					
+					//hg_fdr
+					double[] parray = {hg_pval};
+					BenjaminiHochbergFDR BH = new BenjaminiHochbergFDR(parray);
+					BH.calculate();
+					double[] hg_fdr = BH.getAdjustedPvalues();
+					System.out.print(hg_fdr[0]+"\t");
 					
 					System.out.println();
 					}

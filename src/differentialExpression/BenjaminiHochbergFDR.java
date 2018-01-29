@@ -103,7 +103,7 @@ public final class BenjaminiHochbergFDR {
         for (int i = m - 1; i >= 0; i--) {
             if (i == m - 1) {
                 adjustedPvalues[i] = values[i];
-                System.out.println( values[i]);
+               // System.out.println( values[i]);
             } else {
                 double unadjustedPvalue = values[i];
                 int divideByM = i + 1;
