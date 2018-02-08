@@ -100,7 +100,12 @@ public class Parsers {
 			    }
 			        		
 			   if(!hgnc.equals("")) {
-			        mappingMap.put(hgnc, gos);
+				   if(mappingMap.containsKey(hgnc)) {
+					   mappingMap.get(hgnc).addAll(gos);
+				   }else {
+					   mappingMap.put(hgnc, gos);
+				   }
+			        
 			   }
       	
 			        	
@@ -217,6 +222,12 @@ public class Parsers {
 					
 				}
 			}
+			if(!obsolete && rightRoot) {
+	 
+				id2node.put(id, new Node (id,name,new ArrayList<Node>()));
+				id2parentsids.put(id, isa);
+				
+			}
 			
 			//Here finished reading!
 			//update all nodes!
@@ -227,10 +238,16 @@ public class Parsers {
 			}
 			
 			
+			
+			
+			
+			
+			
 			for(Node node : id2node.values()) {
 				if(node.parents.isEmpty())
 				{
 					dag= new DAG(namespace, node);
+					//System.out.println("roooot: "+node.id);
 					return  new Pair(dag,id2node); 
 				
 				}

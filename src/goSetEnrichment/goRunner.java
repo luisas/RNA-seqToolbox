@@ -17,7 +17,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import org.apache.commons.math3.distribution.HypergeometricDistribution;
-
+import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 import differentialExpression.BenjaminiHochbergFDR;
 import plots.Pair;
 
@@ -44,122 +44,312 @@ public class goRunner {
 	
 	static HashMap<String, Node> id2node; 
 	
+	static List<String> results1 = new ArrayList<String>();
+	static List<String> results2 = new ArrayList<String>();
+	static List<String> results3 = new ArrayList<String>();
+	static List<List<String>> results4 = new ArrayList<List<String>>();
+	
+	
+	static double[] pValues_hg_fdr ;
+	static double[] pValues_fej_fdr;
+	static double[] pValues_ks_fdr;
+	
+	static List<Integer> indexes_hg = new ArrayList<Integer>(); 
+	static List<Integer> indexes_fej= new ArrayList<Integer>(); 
+	static List<Integer> indexes_ks= new ArrayList<Integer>(); 
+	
 	public static void main(String[] args ) {
 		
 		readCommandLine(args);
 		
 		
 		Pair<DAG, HashMap<String, Node>> pairDag=Parsers.parseObo(obo,root);
-		 id2node = pairDag.second;
+		id2node = pairDag.second;
 		dag = pairDag.first;
-		
-		
+	
 		if(mappingtype.equals("ensembl")) {
 			mappingMap = Parsers.parseEnsembl(mapping);
 		}else if(mappingtype.equals("go")){
 			mappingMap = Parsers.parseGaf(mapping);
 		}
 		
+		
+		
+		
 		HashMap<String,Set<String>> go2gene = Utilities.getGOTerm2Gene(mappingMap,id2node);
+			
+//		for(String s : go2gene.keySet()) {
+//			if(!id2node.containsKey(s)) {
+//				System.out.println("found "+s);
+//			}
+////			if(!id2node.get(s).parents.isEmpty()) {
+////			for(Node p : id2node.get(s).parents) {
+////				
+////			}
+////			}
+//		}
+	
+		
+
+		
+		
+		
+		
 		//Overlap file if needed
 		if(!overlapout.equals("")) {
-			//System.out.println("Overlap file written into: " +overlapout);
-			
-			//writeOverlapFile(overlapout,go2gene);
+					
+			writeOverlapFile(overlapout,go2gene);
 		}
 		
 		//parse enrich file
 		Pair<HashMap<String, Pair<Double, Boolean>>,List<String>> enrichOutputPair = Parsers.parseEnrich(enrich);
 		enrichMap= enrichOutputPair.first;
 		eIds=enrichOutputPair.second;
+
 		
 		//Final file 
 		writeOutputFile(o,go2gene);
 		
+		printOut(o);
+		System.out.println("Ready!");
+		
 	}
 	
+	
+/////////////////////////////////////////////////////////////////////////////////////////
+//// NORMAL OUTPUT FILE!
+/////////////////////////////////////////////////////////////////////////////////////////	
+	
+	
+	
 	public static void writeOutputFile(String filename, HashMap<String,Set<String>> go2gene) {
-		FileWriter fos;
-		int populationSize = enrichMap.size();
-		int p2 = go2gene.size();
-		Set<String> genes = new HashSet<String>();
-		for (Set<String> set : go2gene.values()) {
-			for(String s: set) {
-				genes.add(s);
+
+		//POPULATION SIZE --> N
+
+		Set<String> popInt = new HashSet<String>(); 
+		for(String go : go2gene.keySet()) {
+			if(id2node.keySet().contains(go)) {
+				popInt.addAll(go2gene.get(go));
 			}
 		}
-		System.out.println("genes size "+genes.size());
+		popInt.retainAll(enrichMap.keySet());
+		int populationSize= popInt.size();
+		//System.out.println(populationSize);
 		
-		Set<String> interse = new HashSet<String>(genes); 
-		interse.retainAll(enrichMap.keySet());
-		System.out.println("interse "+interse.size());
-		int degs =0;
+		//DEGs --> K
+		Set<String> eDegs = new HashSet<String>();
 		
-		for(Pair<Double, Boolean> pair :enrichMap.values()) {
-			if(pair.second) {
-				degs++;
+		for(String gene : popInt) {
+			if(enrichMap.get(gene).second) {
+				eDegs.add(gene);
 			}
 		}
-		System.out.println("Population size: "+populationSize);
-		System.out.println("degs: "+degs);
 		
+		int degs = eDegs.size();
+	
+		 
+		 List<Double> pHG = new ArrayList<Double>();
+		 List<Double> pFEJ = new ArrayList<Double>();
+		 List<Double> pKS = new ArrayList<Double>();
+
 
 		
+		for(String key :go2gene.keySet() ) {
+			
+			if(go2gene.get(key).size() >=minsize && go2gene.get(key).size()<=maxsize && id2node.containsKey(key)) {
+				
+
+				
+		////////////////////////////////////////////////////////////////////////////		
+		////////////////////////////////////////////////////////////////////////////		
+		///////////					REAL OUTPUT
+		//////////////////////////////////////////////////////////////////////////		
+		////////////////////////////////////////////////////////////////////////////		
+				
+					
+				StringBuilder sb = new StringBuilder();
+					
+				//ID
+				sb.append(key+"\t");
+				
+				//NAME
+				sb.append(id2node.get(key).name+"\t");
+				
+				//SIZE
+				Set<String> intersection = new HashSet<String>(go2gene.get(key)); 
+				intersection.retainAll(enrichMap.keySet());
+				int setSize = intersection.size();
+				sb.append(intersection.size()+"\t");
+				
+				boolean flag = false;
+				//is_true
+				if(eIds.contains(key)) {
+					flag=true;
+					sb.append("true\t");
+				}else {
+					sb.append("false\t");
+				}
+				
+				//signif
+				int noverlap = 0 ; 
+				for(String gene : go2gene.get(key) ) {
+					if(enrichMap.containsKey(gene)) {
+						if(enrichMap.get(gene).second) {
+							noverlap++;
+						}
+					}
+				}
+				sb.append(noverlap+"\t");
+				
+				/////////////////////////////////////////////////
+				///----------------------STATISTICS
+				////////////////////////////////////////////////
+				
+				//hg_pval
+				HypergeometricDistribution hg = new HypergeometricDistribution( populationSize,  degs,  setSize);
+				double hg_pval = hg.upperCumulativeProbability(noverlap);
+				
+				pHG.add(hg_pval);
+				
+				sb.append(hg_pval+"\t");
+				
+				//--------------------------ADD TO RESULTS
+				
+				results1.add(sb.toString());
+				sb = new StringBuilder(); 
+//---------------------------------------------------------------------------------------FIN RES 1--> hg fdr					
+
+				//fej_pval : CHANGE
+				HypergeometricDistribution fej = new HypergeometricDistribution( populationSize-1,  degs-1,  setSize-1);
+				double fej_pval = fej.upperCumulativeProbability(noverlap-1);
+				sb.append(fej_pval+"\t");
+				pFEJ.add(fej_pval);
+				results2.add(sb.toString());
+				sb = new StringBuilder(); 
+//---------------------------------------------------------------------------------------FIN RES 2--> fej fdr					
+				
+				//KS			
+				KolmogorovSmirnovTest ks = new KolmogorovSmirnovTest();
+				double[] in_set_distrib = new double[intersection.size()];
+				//GENES IN SET 
+				int i = 0 ; 
+				for(String gene : intersection) {
+					in_set_distrib[i]=enrichMap.get(gene).first;
+					i++;
+				}
+				//GENES in REST OF POPULATION 
+				Set<String> rest = new HashSet<String>(popInt);
+				rest.removeAll(intersection);
+				double[] bg_distrib=new double[rest.size()];
+				i=0;
+				for(String gene : rest) {
+					bg_distrib[i]=enrichMap.get(gene).first;
+					i++;
+				}
+				//ks stat
+				sb.append(ks.kolmogorovSmirnovStatistic(in_set_distrib, bg_distrib)+"\t");
+				//kspval 
+				double ks_pval =ks.kolmogorovSmirnovTest(in_set_distrib, bg_distrib);
+				sb.append(ks_pval+"\t");
+				
+				pKS.add(ks_pval);
+
+//---------------------------------------res 3 --> ks fdr
+				results3.add(sb.toString());
+				
+				
+				/////////////////////////////////////////////////
+				///----------------------MIN PATH TO TRUE
+				////////////////////////////////////////////////
+				sb=new StringBuilder();
+				
+				Set<String> eSet = new HashSet<String>(go2gene.keySet()); 
+				eSet.retainAll(eIds);
+				
+				if(!flag && !eSet.isEmpty()) {
+					int min = Integer.MAX_VALUE;
+					String lca = "";
+					String minTrue = ""; 
+					//identify min 
+					for(String tr : eSet) {
+						Pair<Integer,String> sp = Utilities.get_sp(id2node.get(key),id2node.get(tr),id2node).first;
+						if(min>=sp.first) {
+							min = sp.first;
+							minTrue = tr; 
+							lca=sp.second; 
+						}
+					}
+					List<String> names = get_Names_to_true(key,lca,minTrue);
+					results4.add(names);
+								
+				}else {
+					results4.add(null);
+				}
+				
+				
+			}
+		}
+		
+		
+		//here finished iteration: GET BENJAMINI HOCHBERG ADJUSTED P VALUES
+		double[] pValues_hg = toArray(pHG);
+	
+		BenjaminiHochbergFDR BH = new BenjaminiHochbergFDR(pValues_hg);
+		BH.calculate();
+		System.out.println(BH.getIndex().length);
+		pValues_hg_fdr = BH.getAdjustedPvalues();
+		for(int j = 0 ; j < BH.getIndex().length; j++) {
+			indexes_hg.add(BH.getIndex()[j]);
+		}
+		
+		
+		double[] pValues_fej = toArray(pFEJ);
+		BH = new BenjaminiHochbergFDR(pValues_fej);
+		BH.calculate();
+		pValues_fej_fdr = BH.getAdjustedPvalues();
+		for(int i = 0 ; i < BH.getIndex().length; i++) {
+			indexes_fej.add(BH.getIndex()[i]);
+		}
+		
+		
+		double[] pValues_ks = toArray(pKS);
+		BH = new BenjaminiHochbergFDR(pValues_ks);
+		BH.calculate();
+		pValues_ks_fdr = BH.getAdjustedPvalues();
+		for(int i = 0 ; i < BH.getIndex().length; i++) {
+			indexes_ks.add(BH.getIndex()[i]);
+		}
+		
+	}
+
+	
+/////////////////////////////////////////////////////////////////////////////////////////
+////PRINT FUNCTION 
+/////////////////////////////////////////////////////////////////////////////////////////	
+	public static void printOut(String filename) {
+		FileWriter fos;
 		try {
 			fos = new FileWriter(filename);
 			PrintWriter dos = new PrintWriter(fos);
 			dos.print("term\tname\tsize\tis_true\tnoverlap\thg_pval\thg_fdr\tfej_pval\tfej_fdr\tks_stat\tks_pval\tks_fdr\tshortest_path_to_a_true\n");
 
-			
-			for(String key :go2gene.keySet() ) {
+			//each line
+			for(int i =0 ; i< results1.size(); i++) {
+				dos.print(results1.get(i));
+				dos.print(pValues_hg_fdr[indexes_hg.indexOf(i)]+"\t");
+				dos.print(results2.get(i));
+				dos.print(pValues_fej_fdr[indexes_fej.indexOf(i)]+"\t");
+				dos.print(results3.get(i));
+				dos.print(pValues_ks_fdr[indexes_ks.indexOf(i)]+"\t");
 				
-				if(go2gene.get(key).size() >=minsize && go2gene.get(key).size()<=maxsize && id2node.containsKey(key)) {
-					if(key.equals("GO:0051046")) {
-					//ID
-					System.out.print(key+"\t");
-					//NAME
-					System.out.print(id2node.get(key).name+"\t");
-					//SIZE
-					Set<String> intersection = new HashSet<String>(go2gene.get(key)); 
-					intersection.retainAll(enrichMap.keySet());
-					int setSize = intersection.size();
-					System.out.print(intersection.size()+"\t");
-					
-					//is_true
-					if(eIds.contains(key)) {
-						System.out.print("true\t");
-					}else {
-						System.out.print("false\t");
-					}
-					//signif
-					int noverlap = 0 ; 
-					for(String gene : go2gene.get(key) ) {
-						if(enrichMap.containsKey(gene)) {
-						if(enrichMap.get(gene).second) {
-							noverlap++;
-						}
-						}
-					}
-					System.out.print(noverlap+"\t");
-					
-					///----------------------STATISTICS
-					
-					
-					//hg_pval
-					HypergeometricDistribution hg = new HypergeometricDistribution( interse.size(),  degs,  setSize);
-					double hg_pval = hg.upperCumulativeProbability(noverlap);
-					System.out.print(hg_pval+"\t");
-					
-					//hg_fdr
-					double[] parray = {hg_pval};
-					BenjaminiHochbergFDR BH = new BenjaminiHochbergFDR(parray);
-					BH.calculate();
-					double[] hg_fdr = BH.getAdjustedPvalues();
-					System.out.print(hg_fdr[0]+"\t");
-					
-					System.out.println();
-					}
+				String prefix = "";
+				if(results4.get(i)!=null) {
+				for(String name : results4.get(i)){
+					dos.print(prefix+name);
+					prefix="|";
 				}
+				}
+				dos.println();
 			}
 			
 			dos.close();
@@ -169,63 +359,100 @@ public class goRunner {
 		}
 		
 		
+		
 	}
+	
+	
+	
+/////////////////////////////////////////////////////////////////////////////////////////
+//// 	HELP FUNCTIONS
+/////////////////////////////////////////////////////////////////////////////////////////	
+
+	public static double[] toArray(List<Double> list) {
+		double[] result = new double[list.size()];
+		int x = 0 ;
+		for(double d : list){
+			result[x] = d;
+			x++;
+		}
+		return result; 
+	}
+
+	public static List<String> get_Names_to_true(String key, String lca, String minTrue){
+		List<String> result = new ArrayList<String>();
+		HashMap<String, String> mapVal1 = Utilities.get_sp(id2node.get(key),id2node.get(lca),id2node).second.first;
+		HashMap<String, String> mapVal2 =Utilities.get_sp(id2node.get(minTrue),id2node.get(lca),id2node).second.first; 
+		String x = lca; 
+		while(!x.equals(key)) {
+			x=mapVal1.get(x);
+			result.add(0,id2node.get(x).name);
+			
+		}
+		x = lca; 
+		result.add(id2node.get(x).name+" *");
+		while(!x.equals(minTrue)) {
+			x=mapVal2.get(x);
+			result.add(id2node.get(x).name);
+		}
+		return result;
+		
+	}
+	
+	
+/////////////////////////////////////////////////////////////////////////////////////////
+////					OVERLAP
+/////////////////////////////////////////////////////////////////////////////////////////
+	
 	public static void writeOverlapFile(String filename , HashMap<String,Set<String>> go2gene) {
 		
 		FileWriter fos;
 		try {
 			fos = new FileWriter(filename);
 			PrintWriter dos = new PrintWriter(fos);
-			dos.print("term1\tterm2\tis_relative\tpath_length\tnum_overlapping\tmax_ov_percentage\n");
+			dos.print("term1\tterm2\tis_relative\tpath_length\tnum_overlapping\tmax_ov_percent\n");
 			
 			//Find overlap 
 			List<String> listKeys = new ArrayList<String>(go2gene.keySet()); 
 			//for(String key :go2gene.keySet() ) {
 			for(int index = 0 ; index < listKeys.size() ; index ++) {
-				String key = listKeys.get(index);
+				String key = listKeys.get(index);		
+					
 				//Filter size! in intervall [minsize,maxsize]
-				if(go2gene.get(key).size() >=minsize && go2gene.get(key).size()<=maxsize && id2node.containsKey(key)) {
-					
-					
+				if(go2gene.get(key).size() >=minsize && go2gene.get(key).size()<=maxsize && id2node.containsKey(key)) {	
 					
 					//for(String key2 : go2gene.keySet()) {
 					for(int index2 = index+1 ; index2 < listKeys.size() ; index2 ++) {
 						String key2 = listKeys.get(index2);
+						
 						if(!key2.equals(key) && go2gene.get(key2).size() >=minsize && go2gene.get(key2).size()<=maxsize && id2node.containsKey(key2)) {
-							
 							
 							Set<String> intersection = new HashSet<String>(go2gene.get(key)); // use the copy constructor
 							intersection.retainAll(go2gene.get(key2));
+						
 							String term1;
 							String term2;
-							if(test) {
-							 term1="GO:0006612" ; 
-							term2 = "GO:0048259"; 
-							}else {
-								term1=key ; 
-								term2 = key2; 
-							}
+						
+							term1=key ; 
+							term2 = key2; 
+							
 							if(key.equals(term1) || key2.equals(term1)){
 								if(key.equals(term2) || key2.equals(term2)){
+								
 									
 								if(intersection.size()>0) {
 							
-									//System.out.print(key +"\t");
-//									System.out.print(key2+"\t");
-//									System.out.print(Utilities.is_relative(term1, term2, id2node)+"\t");
-//									System.out.print(Utilities.path_length(term1, term2, id2node) + "\t");
-//									System.out.print(intersection.size() +"\t");
+
+									
 									float perc1 = (float)intersection.size()/(float)go2gene.get(term1).size(); 
 									float perc2 = (float)intersection.size()/(float)go2gene.get(term2).size(); 
 									float max = Float.max(perc1, perc2)*100;
 									String maxWith2CommaValues = String.format ("%.2f", max);
-//									System.out.print(maxWith2CommaValues.replaceAll(",", ".")+"\t");
-//									System.out.println();
-									
-									
+
 									dos.print(key +"\t"+key2+"\t");
 									dos.print(Utilities.is_relative(term1, term2, id2node)+"\t");
-									dos.print(Utilities.path_length(term1, term2, id2node) + "\t");
+									int spath = Utilities.get_sp(id2node.get(term1), id2node.get(term2), id2node).first.first;
+									//int spath =Utilities.get_sp(node1, node2, id2node); 
+									dos.print(spath + "\t");
 									dos.print(intersection.size() +"\t");
 									dos.println(maxWith2CommaValues.replaceAll(",", ".")+"\t");
 								}
@@ -254,7 +481,9 @@ public class goRunner {
 	}
 	
 	
-	
+/////////////////////////////////////////////////////////////////////////////////////////
+//// COMMAND LINE PARAMS
+/////////////////////////////////////////////////////////////////////////////////////////
 	
 	public static void readCommandLine(String[] args) {
 
