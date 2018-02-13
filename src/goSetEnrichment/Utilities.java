@@ -12,17 +12,16 @@ public class Utilities {
 	
 	static int LevelParent = 0 ; 
 	
-	public static Pair<Pair<Integer,String>,Pair<HashMap<String,String>, HashMap<String,String>>> get_sp(Node node1,Node node2, HashMap<String,Node> id2node) {
-		
+	public static Pair<Pair<Pair<Integer, Integer>, String>, Pair<HashMap<String, List<String>>, HashMap<String, List<String>>>> get_sp(Node node1,Node node2, HashMap<String,Node> id2node) {
 	
 		List<String> parents2 = new ArrayList<String>();
 		HashMap<String,Integer>  map2 = new HashMap<String,Integer>();
-		HashMap<String, String> mapVal2 = new HashMap<String, String>();
+		HashMap<String, List<String>> mapVal2 = new HashMap<String, List<String>>();
 		getParents(node2, parents2,map2,mapVal2);
 		
 		List<String> parents1 = new ArrayList<String>();
 		HashMap<String,Integer>  map1 = new HashMap<String,Integer>();
-		HashMap<String, String> mapVal1 = new HashMap<String, String>();
+		HashMap<String, List<String>> mapVal1 = new HashMap<String, List<String>>();
 		getParents(node1, parents1,map1, mapVal1);
 	
 		
@@ -37,52 +36,49 @@ public class Utilities {
 		
 		int min = Integer.MAX_VALUE;
 		String officialLca = null ;
+		int off1 = Integer.MAX_VALUE;
+		int off2 = Integer.MAX_VALUE;
 		
 		
 		boolean inLine = false; 
 		if(parents1.contains(node2.id)) {
 			min=map1.get(node2.id);
+			off1=min; 
+			off2=0;
 			officialLca = node2.id;
 			inLine= true; 
 		}else if(parents2.contains(node1.id)) {
 			min=map2.get(node1.id);
 			officialLca = node1.id;
+			off2=min; 
+			off1=0;
 			inLine = true; 
 		}
 		
+
+
 		//find both SP to LCA
-		if(!inLine) {
 			int path1 = Integer.MAX_VALUE;
 			int path2 = Integer.MAX_VALUE;
-
 			for(String candidateLca : lca ) {
 				
 				path1 = map1.get(candidateLca);
 				path2 = map2.get(candidateLca);
 		
-	//			if(path1==0||path2==0) {
-	//				
-	//				if(min>path1 +path2) {
-	//					min=path1+path2;
-	//					officialLca = candidateLca; 
-	//				
-	//				}	
-	//			}else {
 					if(min>path1 +path2-1) {
 						min=path1+path2-1;
 						officialLca = candidateLca; 
+						off1=path1; 
+						off2=path2;
 						
 					}
-	//			}				
+				
 			}
-		}
 		
-		Pair<Integer,String> one = new Pair<Integer,String>(min,officialLca);
-		Pair<HashMap<String,String>, HashMap<String,String>> two = new Pair<HashMap<String,String>, HashMap<String,String>>(mapVal1, mapVal2);
-	
+		Pair<Pair<Integer,Integer>,String> one = new Pair<Pair<Integer,Integer>,String>(new Pair<Integer, Integer>(off1,off2),officialLca);
+		Pair<HashMap<String,List<String>>, HashMap<String,List<String>>> two = new Pair<HashMap<String,List<String>>, HashMap<String,List<String>>>(mapVal1, mapVal2);
 		
-		
-		return  new Pair(one,two); 
+		return  new Pair<Pair<Pair<Integer,Integer>,String>,Pair<HashMap<String,List<String>>, HashMap<String,List<String>>>>(one,two); 
 	}
 	
 
@@ -113,15 +109,12 @@ public class Utilities {
 			//System.out.println("--: "+ node.id+" lev: "+ l + " "+ y );
 			list.add(node.id);
 			
-			
-			
 			if(node.equals(stop)) {
 				for(int i = 0 ; i < path ;i++ ) {
 					t.add(list.get(list.size()-path+i));
 				}
 				return; 
 			}
-			
 			rec(node,s,stop,l-1,path,list,t);
 		}
 		
@@ -165,7 +158,7 @@ public class Utilities {
 	
 
 	
-	public static void getParents(Node node, List<String> list,HashMap<String, Integer> listLevel, HashMap<String, String> map) {
+	public static void getParents(Node node, List<String> list,HashMap<String, Integer> listLevel, HashMap<String, List<String>> map) {
 		LevelParent=0;
 		List<Node> parentsToVerify = new ArrayList<Node>();
 		parentsToVerify.addAll(node.parents);
@@ -173,48 +166,48 @@ public class Utilities {
 		listLevel.put(node.id, LevelParent);
 		list.add(node.id);
 		
+		map.put(node.id, new ArrayList<String>());
+		//MAP : key parent, value child
 		for(Node n : node.parents) {
-			map.put(n.id, node.id);
+			if(map.containsKey(n.id)) {
+				map.get(n.id).add(node.id);
+	
+			}else {
+				List<String> a = new ArrayList<String>();
+				a.add(node.id);
+				map.put(n.id, a);
+			}
+			
 		}
-		
 		
 		List<Node> nextLevelParents = new ArrayList<Node>();
 		
-		
 		while(!parentsToVerify.isEmpty()) {
 			LevelParent++;
-				
 			nextLevelParents=new ArrayList<Node>();
-			
 			for(Node parent : parentsToVerify) {
-				
 				if(!list.contains(parent.id)) {					
 					listLevel.put(parent.id, LevelParent);
 					list.add(parent.id);
 					nextLevelParents.addAll(parent.parents);
-					
+					//if one has more parents
 					for(Node n : parent.parents) {
-					
-						map.put(n.id, parent.id);
-					}
-					
+						if(map.containsKey(n.id)) {
+							map.get(n.id).add(parent.id);
+						}else {
+							List<String> a = new ArrayList<String>();
+							a.add(parent.id);
+							map.put(n.id, a);
+						}
+						if(!map.containsKey(parent.id)) {
+							map.put(parent.id, new ArrayList<String>());
+						}
+					}	
 				}
-				
 			}
-			
-			
-			
 			parentsToVerify.clear();
 			parentsToVerify.addAll(nextLevelParents);
-			
 		}	
-		
-		
-		
-			
-		
-	
-		
 	}
 	
 	
@@ -247,7 +240,9 @@ public class Utilities {
 	}
 
 
-
+////////////////////////////////////////////////////////////////
+// NEEDED AND VERIFIED 
+/////////////////////////////////////////////////////////////////
 
 //Propagation to parents
 public static void addGeneToParents(String go,HashMap<String,Node> id2node, HashMap<String,Set<String>> mapGO2Gene, String gene) {
@@ -296,15 +291,6 @@ public static void addGOToParents(String go,HashMap<String,Node> id2node, HashMa
 		}
 	}
 }
-
-
-	
-
-	
-
-
-	
-
 	public static void getParentsSimple(Node node, Set<String> list){
 		
 		if(!node.parents.isEmpty()) {
@@ -316,10 +302,6 @@ public static void addGOToParents(String go,HashMap<String,Node> id2node, HashMa
 
 		
 	}
-	
-
-	
-	
 
 	public static Boolean is_relative(String term1, String term2 , HashMap<String,Node> id2node) {
 		

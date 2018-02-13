@@ -72,32 +72,20 @@ public class goRunner {
 		}else if(mappingtype.equals("go")){
 			mappingMap = Parsers.parseGaf(mapping);
 		}
-		
-		
-		
-		
-		HashMap<String,Set<String>> go2gene = Utilities.getGOTerm2Gene(mappingMap,id2node);
-			
-//		for(String s : go2gene.keySet()) {
-//			if(!id2node.containsKey(s)) {
-//				System.out.println("found "+s);
-//			}
-////			if(!id2node.get(s).parents.isEmpty()) {
-////			for(Node p : id2node.get(s).parents) {
-////				
-////			}
-////			}
+//		for(Node p : id2node.get("GO:0043433").parents) {
+//			System.out.println(p.id);
 //		}
-	
-		
+//		for(Node node: id2node.values()) {
+//			if(node.name.equals("regulation of nucleotide biosynthetic process")) {
+//				System.out.println(node.id);
+//			}
+//		}	GO:0044283
 
 		
-		
-		
+		HashMap<String,Set<String>> go2gene = Utilities.getGOTerm2Gene(mappingMap,id2node);		
 		
 		//Overlap file if needed
 		if(!overlapout.equals("")) {
-					
 			writeOverlapFile(overlapout,go2gene);
 		}
 		
@@ -106,7 +94,7 @@ public class goRunner {
 		enrichMap= enrichOutputPair.first;
 		eIds=enrichOutputPair.second;
 
-		
+
 		//Final file 
 		writeOutputFile(o,go2gene);
 		
@@ -134,7 +122,6 @@ public class goRunner {
 		}
 		popInt.retainAll(enrichMap.keySet());
 		int populationSize= popInt.size();
-		//System.out.println(populationSize);
 		
 		//DEGs --> K
 		Set<String> eDegs = new HashSet<String>();
@@ -159,6 +146,7 @@ public class goRunner {
 			if(go2gene.get(key).size() >=minsize && go2gene.get(key).size()<=maxsize && id2node.containsKey(key)) {
 				
 
+				
 				
 		////////////////////////////////////////////////////////////////////////////		
 		////////////////////////////////////////////////////////////////////////////		
@@ -261,30 +249,42 @@ public class goRunner {
 				/////////////////////////////////////////////////
 				///----------------------MIN PATH TO TRUE
 				////////////////////////////////////////////////
-				sb=new StringBuilder();
-				
-				Set<String> eSet = new HashSet<String>(go2gene.keySet()); 
+				sb=new StringBuilder();				
+			
+				List<String> eSet = new ArrayList<String>(); 	
+				eSet.addAll(id2node.keySet());
 				eSet.retainAll(eIds);
 				
+
 				if(!flag && !eSet.isEmpty()) {
 					int min = Integer.MAX_VALUE;
 					String lca = "";
 					String minTrue = ""; 
-					//identify min 
+
+					int min1 = Integer.MAX_VALUE;
+					int min2 = Integer.MAX_VALUE;
+					
 					for(String tr : eSet) {
-						Pair<Integer,String> sp = Utilities.get_sp(id2node.get(key),id2node.get(tr),id2node).first;
-						if(min>=sp.first) {
-							min = sp.first;
-							minTrue = tr; 
-							lca=sp.second; 
+			
+						Pair<Pair<Integer,Integer>,String> sp = Utilities.get_sp(id2node.get(key),id2node.get(tr),id2node).first;	
+						if(min>=(sp.first.first+sp.first.second-1)) {
+								min = sp.first.first+sp.first.second-1;
+								min1= sp.first.first;
+								min2= sp.first.second;
+								minTrue = tr; 
+								lca=sp.second; 
 						}
+
+						
 					}
-					List<String> names = get_Names_to_true(key,lca,minTrue);
-					results4.add(names);
-								
-				}else {
-					results4.add(null);
-				}
+
+						List<String> names = get_Names_to_true(key,lca,minTrue,min1, min2);
+
+						results4.add(names);		
+					
+					}else {
+						results4.add(null);
+					}
 				
 				
 			}
@@ -378,27 +378,93 @@ public class goRunner {
 		return result; 
 	}
 
-	public static List<String> get_Names_to_true(String key, String lca, String minTrue){
+	public static List<String> get_Names_to_true(String key, String lca, String minTrue, Integer n, Integer n2){
 		List<String> result = new ArrayList<String>();
-		HashMap<String, String> mapVal1 = Utilities.get_sp(id2node.get(key),id2node.get(lca),id2node).second.first;
-		HashMap<String, String> mapVal2 =Utilities.get_sp(id2node.get(minTrue),id2node.get(lca),id2node).second.first; 
-		String x = lca; 
-		while(!x.equals(key)) {
-			x=mapVal1.get(x);
-			result.add(0,id2node.get(x).name);
-			
-		}
+		HashMap<String, List<String>> mapVal1 = Utilities.get_sp(id2node.get(key),id2node.get(lca),id2node).second.first;
+		HashMap<String, List<String>> mapVal2 =Utilities.get_sp(id2node.get(minTrue),id2node.get(lca),id2node).second.first; 
+		String x = lca; 		
+
+		//-----------------------LEFT PATH
+			List<String> list = new ArrayList<String>();
+			list.add(lca);
+			List<String> res = new ArrayList<String>();
+			List<List<String>> results = new ArrayList<List<String>>();
+			recursion(mapVal1,list , key, 0, n, res, results) ;
+			List<String> official = new ArrayList<String>();
+			for(List<String> pSP : results) {
+				if(pSP.size() == n+1 ) {
+					official = pSP;
+				}
+			}
+			for(int i = 1 ; i<official.size()-1 ; i++) {
+				String s = official.get(i);
+				result.add(0,id2node.get(s).name);
+			}
+			if(n!=0) {
+			result.add(0,id2node.get(key).name);
+			}
+		
+		
 		x = lca; 
 		result.add(id2node.get(x).name+" *");
-		while(!x.equals(minTrue)) {
-			x=mapVal2.get(x);
-			result.add(id2node.get(x).name);
+		//System.out.println("---------------------------------------------------");
+		list = new ArrayList<String>();
+		list.add(lca);
+		res = new ArrayList<String>();
+		results = new ArrayList<List<String>>();
+		recursion(mapVal2,list , minTrue, 0, n2, res, results) ;
+		 official = new ArrayList<String>();
+		 //min = Integer.MAX_VALUE;
+		for(List<String> pSP : results) {
+			//if(min>= pSP.size()) {
+				//min = pSP.size();
+			if(pSP.size() == n2+1 ) {
+				official = pSP;
+			}
+			//}
+		}
+		for(int i = 1 ; i<official.size()-1 ; i++) {
+			String s = official.get(i);
+			result.add(id2node.get(s).name);
+		}
+		if(n2!=0) {
+		result.add(id2node.get(minTrue).name);
 		}
 		return result;
 		
 	}
 	
+
 	
+	//find all paths to lca 
+	public static void recursion(HashMap<String, List<String>> mapVal1, List<String> list , String stop, Integer l , Integer length, List<String> res, List<List<String>> result) {
+		
+		for(String key : list) {
+			if(mapVal1.containsKey(key)) {
+//				System.out.println("key "+ key + " level "+l);
+
+				if(res.size()>l) {
+					res.remove(res.get(l));
+				}
+				res.add(l, key);
+				List<String> next = new ArrayList<String>();
+				next.addAll(mapVal1.get(key));
+				
+				if(l==length && res.get(l).equals(stop)) {
+//					System.out.println("######");
+					result.add(new ArrayList<String>());
+					for(int i =0 ; i< l+1 ;i++ ) {
+						result.get(result.size()-1).add(res.get(i));
+					}
+					return;
+				}
+				recursion( mapVal1,  next ,  stop, l+1, length, res , result);	
+
+			}
+
+		}
+		
+	}
 /////////////////////////////////////////////////////////////////////////////////////////
 ////					OVERLAP
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -438,11 +504,7 @@ public class goRunner {
 							if(key.equals(term1) || key2.equals(term1)){
 								if(key.equals(term2) || key2.equals(term2)){
 								
-									
 								if(intersection.size()>0) {
-							
-
-									
 									float perc1 = (float)intersection.size()/(float)go2gene.get(term1).size(); 
 									float perc2 = (float)intersection.size()/(float)go2gene.get(term2).size(); 
 									float max = Float.max(perc1, perc2)*100;
@@ -450,7 +512,12 @@ public class goRunner {
 
 									dos.print(key +"\t"+key2+"\t");
 									dos.print(Utilities.is_relative(term1, term2, id2node)+"\t");
-									int spath = Utilities.get_sp(id2node.get(term1), id2node.get(term2), id2node).first.first;
+									Pair<Pair<Integer,Integer>,String> spcalc = Utilities.get_sp(id2node.get(term1), id2node.get(term2), id2node).first;
+									int spath = spcalc.first.first + spcalc.first.second-1;
+									if(spcalc.first.first==0 || spcalc.first.second==0) {
+										spath++;
+									}
+
 									//int spath =Utilities.get_sp(node1, node2, id2node); 
 									dos.print(spath + "\t");
 									dos.print(intersection.size() +"\t");
