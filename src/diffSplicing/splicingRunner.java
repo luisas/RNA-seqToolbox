@@ -30,12 +30,11 @@ import exonSkipping.parserGTF;
 import net.sf.samtools.AlignmentBlock;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
-import readSimulator.Utils;
 
 
 public class splicingRunner {
 
-	static boolean test = true; 
+	static boolean test = false; 
 	static String o;
 	static String gtf;
 	static String bam;
@@ -44,8 +43,8 @@ public class splicingRunner {
 	
 	public static void main(String[] args) {
 
-		
-		
+		long startTime = System.currentTimeMillis();;
+
 		//------------------------------------Read command Line
 		readCommandLine(args);
 		
@@ -54,95 +53,103 @@ public class splicingRunner {
 		
 		//---------------------------------------read Bam File
 
-		List<ReadPair>reads = readBAM2(bam, annotationGTF);
+		List<ReadPair>reads = readBAM(bam, annotationGTF);
+
+		long stopTime = System.currentTimeMillis();;
+		long diff = (stopTime - startTime)/1000;
+		System.out.println("Init: "+ diff);
 		
-
-
 		
 		//////////////////////////////////SKIPPED EXONS
 		if(test) {
 			
-			Gene gene = annotationGTF.getGeneById("ENSG00000230031.6"
-					+ "");
+			Gene gene = annotationGTF.getGeneById("ENSG00000143839.12");
+			//System.out.println("GENE start : "+ gene.getStart()+" stop: "+gene.getStop());
 			
-			System.out.println("ENSG00000230031.6	21053822-21053893	13	11	65497,65485,65576,65466,65553,65454,65556,65456,65478,65558,65547,65482,65460 \n" + 
-					""
-);	
-			System.out.println("GENE start : "+ gene.getStart()+" stop: "+gene.getStop());
-			for(Transcript t : gene.getTranscripts().values()) {
-				System.out.println(t.getId());
-				System.out.println(Utils.prettyRegionVector(t.getRegionVectorExons()));
-			}
+			/*
+			 * Two transcript -> two exon skipping 
+			 */
+			
+//			//watch all transcripts
+//			for(Transcript t : gene.getTranscripts().values()) {
+//				System.out.println(t.getId());
+//				System.out.println(Utils.prettyRegionVector(t.getRegionVectorExons()));
+//			}
+			
 			for(ExonSkipping es : gene.calculateExonSkipping()){	
 				for(RegionVector rv : es.getWt()) {
 					psiAnnotation psi;
-					System.out.println("---------------------------------------------------------ejhejhajfsh");
-					System.out.println(Utils.prettyRegionVector(rv.inverse()));
+					//System.out.println("----------------------------------------------");
+					//print out skipped exon
+					//System.out.println("Skipped exon: " + Utils.prettyRegionVector(rv.inverse()));
 					
 					for(Region r: rv.inverse().getVector()) {
-						 Region e = new Region(r.getStart()-1, r.getEnd());
+						 Region e = new Region(r.getStart()-1, r.getEnd()-1);
 
-						
 						 psi = new psiAnnotation(gene,es,e,reads, annotationGTF);
 						 System.out.println(e.getStart()+"-"+e.getEnd());
-						 System.out.println(psi.getIncl_count());
-						 System.out.println(psi.getExcl_count());
-						
-						
-						 
+						 System.out.println("incl count : "+psi.getIncl_count());
+						 System.out.println("excl count : "+psi.getExcl_count());
 					}
 				}
 				
+
 			}
+			System.exit(0);	
 			
-			System.exit(0);
+			
 		}
-		
+		 startTime = System.currentTimeMillis();;
 		
 		//NORMAL WAY 
 		List<psiAnnotation> psiAnnotation = new ArrayList<>();
 		Iterator<Entry<String, Gene>> it = annotationGTF.getGenes().entrySet().iterator();
 	    while (it.hasNext()) {
-
 	        Map.Entry<String, Gene>pair = (Map.Entry<String, Gene>)it.next();
 			Gene myGene= annotationGTF.getGeneById(pair.getKey().toString());
 			for(ExonSkipping es : myGene.calculateExonSkipping()){	
 				for(RegionVector rv : es.getWt()) {
 					psiAnnotation psi;
 					for(Region r: rv.inverse().getVector()) {
-						 Region e = new Region(r.getStart()-1, r.getEnd());
-						 
+						 Region e = new Region(r.getStart()-1, r.getEnd()-1);
+						
 							 psi = new psiAnnotation(myGene,es,e,reads, annotationGTF);
 							 psiAnnotation.add(psi);
-						 
 					}
 				}
 				
 			}
 	    }
 	 
-
 	    printoutResult(psiAnnotation);
 	    System.out.println("ready");
-	    
+		 stopTime = System.currentTimeMillis();;
+		 diff = (stopTime - startTime);
+		System.out.println("Init: "+ diff);
 	
 	} 
 	
+///////////////////////////////////////////////////////////////
+//// HELP FUNCTIONS : READ BAM 
+///////////////////////////////////////////////////////////////	
 	
-	
-
-	
-	
-	public static List<ReadPair> readBAM2(String bam, Annotation annotationGTF) {
+	/*
+	 * Reads BAM file and saves the reads in ReadPairs.
+	 * 
+	 * Only selects the ones that have a "paired" read.
+	 * 
+	 * Selects the ones that have the features needed by check_if_we_can_ignore.
+	 */
+	public static List<ReadPair> readBAM(String bam, Annotation annotationGTF) {
 
 		HashMap<String, SAMRecord> lookup = new HashMap<String , SAMRecord>();
 		HashMap<String, ReadPair> reads = new HashMap<String , ReadPair>();
 		SAMFileReader sam_reader = new SAMFileReader(new File(bam),false);
 		sam_reader.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
-		Iterator<SAMRecord> it = sam_reader.iterator();
-
 		String tmpChr= "-1";
 	
+		//iterate through all reads in bam file
+		Iterator<SAMRecord> it = sam_reader.iterator();
 		while(it.hasNext()) {
 
 			SAMRecord sr = it.next();
@@ -174,77 +181,19 @@ public class splicingRunner {
 		// now i have read pairs
 		List<ReadPair> list = new ArrayList<ReadPair>();
 		for(ReadPair rp : reads.values()) {
-		
 			//if(isTranscriptomic(rp.getFw() ,rp.getRw() ,  annotationGTF)){
 				list.add(new ReadPair(rp.getFw(),rp.getRw()));
-			
 				//list.add(rp.getRw());
-			
 			//}
 		}
 		sam_reader.close();
 		return list; 
-
 	}
+
+///////////////////////////////////////////////////////////////
+////HELP FUNCTION : IS TRANSCRIPTOMIC
+///////////////////////////////////////////////////////////////	
 	
-	
-	
-
-	public static List<SAMRecord> readBAM(String bam, Annotation annotationGTF) {
-
-		HashMap<String, SAMRecord> lookup = new HashMap<String , SAMRecord>();
-		HashMap<String, ReadPair> reads = new HashMap<String , ReadPair>();
-		SAMFileReader sam_reader = new SAMFileReader(new File(bam),false);
-		sam_reader.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
-		Iterator<SAMRecord> it = sam_reader.iterator();
-
-		String tmpChr= "-1";
-	
-		while(it.hasNext()) {
-
-			SAMRecord sr = it.next();
-			SAMRecord other_seen = lookup.get(sr.getReadName());
-		
-			if(tmpChr.equals("-1")) {
-				tmpChr=sr.getReferenceName();
-			}
-			
-			if(!tmpChr.equals(sr.getReferenceName())) {
-				lookup.clear();
-			}
-			tmpChr=sr.getReferenceName();
-
-			if(BamRunner.check_if_we_can_ignore(sr, annotationGTF)) {			
-	
-				continue;
-			}else if(other_seen!=null ) {
-		
-				reads.put(sr.getReadName(), new ReadPair(sr,other_seen));
-				continue;
-
-			}else {
-				
-				lookup.put(sr.getReadName(), sr);
-			}
-		}
-
-		// now i have read pairs
-		List<SAMRecord> list = new ArrayList<SAMRecord>();
-		for(ReadPair rp : reads.values()) {	
-
-			
-			if(isTranscriptomic(rp.getFw() ,rp.getRw() ,  annotationGTF)){
-				list.add(rp.getFw());	
-				list.add(rp.getRw());
-			
-			}
-		}
-		sam_reader.close();
-		return list; 
-
-	}
-	
-
 	
 	public static boolean isTranscriptomic(SAMRecord fw, SAMRecord rw, Annotation GTFannotation) {
 		   Region g;
@@ -256,13 +205,7 @@ public class splicingRunner {
 				//within one gene (part of a gene)
 				if(g.getStart() <= r.getStart()  && g.getEnd() >= r.getEnd() && fw.getReferenceName().equals(gene.getChr())) {
 					
-					if(fw.getReadName().equals("71932")) {
-						System.out.println("=---------------------------------TREUEEA");
-						Utilities.printRead(fw);
-						System.out.println(gene.getId());
-						System.out.println("=--------------------------------------------");
-	
-					}
+					
 					
 					for(Transcript transcript : gene.getTranscripts().values()){
 
@@ -275,16 +218,6 @@ public class splicingRunner {
 
 							if(!exons_reads1.isConsistent(exons_t) || !exons_reads2.isConsistent(exons_t) ) {
 								currentValue=false;
-//								if(fw.getReadName().equals("71932")) {
-//									System.out.println("fadkjfhkljds");
-//									Utilities.printRead(fw);
-//									System.out.println(gene.getId());
-//									System.out.println(exons_reads1.isConsistent(exons_t));
-//									System.out.println(Utils.prettyRegionVector(exons_t));
-//									System.out.println(Utils.prettyRegionVector(exons_reads1));
-//									System.out.println(Utils.prettyRegionVector(exons_reads2));
-//								}
-								//return false;
 							}
 							else {
 
@@ -294,37 +227,16 @@ public class splicingRunner {
 								
 						}
 							
-					}
-					if(!currentValue) {
-						//return false;
-					}
-
-			
+					}			
 					}
 				
 				}
-				
-		   		//System.out.println("Came to an end!");
-		
+						
 		   		return currentValue; 
-		   
-		
-	}
-	
-	public static List<SAMRecord> readBAMSimple(String bam, Annotation annotationGTF) {
-
-		List<SAMRecord> reads = new ArrayList<SAMRecord> ();
-		SAMFileReader sam_reader = new SAMFileReader(new File(bam),false);
-		sam_reader.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
-		Iterator<SAMRecord> it = sam_reader.iterator();	
-		while(it.hasNext()) {
-			SAMRecord sr = it.next();
-				reads.add(sr);
-		}
-		sam_reader.close();
-		return reads; 
-	}
-	
+	}	
+///////////////////////////////////////////////////////////////
+//// FUNCTION FOR TESTING
+///////////////////////////////////////////////////////////////	
 	
 	public static void printoutReads(List<SAMRecord> list) {
 		File filename = new File("/Users/luisasantus/Desktop/reads.txt");
@@ -361,11 +273,12 @@ public class splicingRunner {
 		}
 	}
 
+///////////////////////////////////////////////////////////////
+////PRINT OUT FINAL RESULT
+///////////////////////////////////////////////////////////////
 	public static void printoutResult(List<psiAnnotation> list) {
 		File filename = new File(o);
 		FileWriter fos;
-		
-		
 		try {
 			fos = new FileWriter(filename);
 			PrintWriter dos = new PrintWriter(fos);
@@ -375,7 +288,8 @@ public class splicingRunner {
 			for(psiAnnotation psi : list) {
 				if(psi.getTotal_count()>0) {
 				dos.print(psi.getGeneId()+"\t");
-				dos.print(psi.getExon().getStart()+"-"+psi.getExon().getEnd()+"\t");
+				int end = psi.getExon().getEnd()+1;
+				dos.print(psi.getExon().getStart()+"-"+end+"\t");
 				dos.print(psi.getIncl_count()+"\t");
 				dos.print(psi.getExcl_count()+"\t");
 				dos.print(psi.getTotal_count()+"\t");
@@ -393,6 +307,11 @@ public class splicingRunner {
 			e.printStackTrace();
 		}
 	}
+	
+	
+///////////////////////////////////////////////////////////////
+//// COMMAND LINE 
+///////////////////////////////////////////////////////////////
 
 	public static void readCommandLine(String[] args) {
 

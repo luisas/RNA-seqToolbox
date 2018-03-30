@@ -20,8 +20,8 @@ public class RunnerPlot {
 	public static void main(String[] args) throws IOException, InterruptedException {
 
 
-		plotExercise2("/home/s/santus/Desktop");
-
+		//plotExercise2("/home/s/santus/Desktop");
+		plotExerciseOne();
 
 	}
 

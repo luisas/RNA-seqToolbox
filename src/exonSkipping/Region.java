@@ -62,6 +62,19 @@ public class Region implements Comparable<Region>{
 	 return result;
 		
 	}
+	public boolean overlapMod(Region r) {
+		
+		 int max_end = Math.max(r.getEnd(), this.getEnd());
+		 int min_end = Math.min(r.getEnd(), this.getEnd());
+		 int min_start= Math.min(r.getStart(), this.getStart());
+		 int max_start= Math.max(r.getStart(), this.getStart());
+		 int result = max_end-min_start-(max_end-min_end)-(max_start-min_start);
+		 if(result<0) {
+			 result =0;
+		 }
+		 return Integer.max(this.getStart(),r.getStart()) <= Integer.min(this.getEnd(),r.end);
+			
+	}
 
 	public int getLength(){
 

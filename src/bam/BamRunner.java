@@ -21,13 +21,10 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-import augmentedTree.IntervalTree;
-import augmentedTree.KeyedIntervalForest;
 import exonSkipping.Annotation;
 import exonSkipping.Gene;
 import exonSkipping.Region;
 import exonSkipping.RegionVector;
-import exonSkipping.Utilities;
 import exonSkipping.parserGTF;
 
 public class BamRunner  {
@@ -136,16 +133,13 @@ public class BamRunner  {
 			
 				
 				if(mapGRV.containsKey(ba.getGrv())) {
-
-			
 					ba.setPcrindex( mapGRV.get(ba.getGrv()).size());
-					//System.out.println(ba.getPcrindex());
 					mapGRV.get(ba.getGrv()).add(sr.getReadName());
 				}
 				else {
 
 					
-					ba.setPcrindex(0);
+					
 					//System.out.println(sr.getReadName());
 					if(sr.getReadName().equals("4543444")    ) {
 						
@@ -159,6 +153,7 @@ public class BamRunner  {
 						System.out.println("----------------");
 						System.out.println("KEY "+Utils.prettyRegionVector(ba.getGrv()));
 					}
+					ba.setPcrindex(0);
 					List<String> a = new ArrayList<String>();
 					a.add(sr.getReadName());
 					mapGRV.put(ba.getGrv(),a);	
@@ -265,9 +260,7 @@ public class BamRunner  {
 			for(String id: values) {
 				bamAnnotation.get(id).setPcrindex(size);
 			}
-			
-		}
-		
+		}	
 	}
 
 	public static boolean check_if_we_can_ignore(SAMRecord sr, Annotation GTFannotation) {

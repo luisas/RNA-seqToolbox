@@ -72,16 +72,7 @@ public class goRunner {
 		}else if(mappingtype.equals("go")){
 			mappingMap = Parsers.parseGaf(mapping);
 		}
-//		for(Node p : id2node.get("GO:0043433").parents) {
-//			System.out.println(p.id);
-//		}
-//		for(Node node: id2node.values()) {
-//			if(node.name.equals("regulation of nucleotide biosynthetic process")) {
-//				System.out.println(node.id);
-//			}
-//		}	GO:0044283
 
-		
 		HashMap<String,Set<String>> go2gene = Utilities.getGOTerm2Gene(mappingMap,id2node);		
 		
 		//Overlap file if needed
@@ -93,7 +84,6 @@ public class goRunner {
 		Pair<HashMap<String, Pair<Double, Boolean>>,List<String>> enrichOutputPair = Parsers.parseEnrich(enrich);
 		enrichMap= enrichOutputPair.first;
 		eIds=enrichOutputPair.second;
-
 
 		//Final file 
 		writeOutputFile(o,go2gene);
@@ -184,6 +174,7 @@ public class goRunner {
 					if(enrichMap.containsKey(gene)) {
 						if(enrichMap.get(gene).second) {
 							noverlap++;
+							
 						}
 					}
 				}
@@ -265,6 +256,7 @@ public class goRunner {
 					int min2 = Integer.MAX_VALUE;
 					
 					for(String tr : eSet) {
+						
 			
 						Pair<Pair<Integer,Integer>,String> sp = Utilities.get_sp(id2node.get(key),id2node.get(tr),id2node).first;	
 						if(min>=(sp.first.first+sp.first.second-1)) {

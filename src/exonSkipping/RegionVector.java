@@ -1,112 +1,28 @@
 package exonSkipping;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Vector;
 
-import augmentedTree.IntervalTree;
 import readSimulator.Utils;
+
 
 public class RegionVector {
 
 	private Vector<Region> vector;
 
 
-	public RegionVector getAllLeftExons(Region exon) {
-		
-		RegionVector result = new RegionVector();
-		int i = 0 ; 
-		
-		int indexExon = -1 ; 
-		for(Region r : this.getVector()) {
-			if(r.equals(exon)) {
-				indexExon = i; 
-			}
-			i++;
-		}
-		for( int j = 0 ; j< indexExon ; j ++ ) {
-			
-			result.getVector().add(this.getElement(j));
-		}
-			
-		return result; 	
-		
-	}
-	
-	public RegionVector getAllRigthExons(Region exon) {
-		RegionVector result = new RegionVector();
-		int i = 0 ; 
-		
-		int indexExon = -1 ; 
-		for(Region r : this.getVector()) {
-			if(r.equals(exon)) {
-				indexExon = i; 
-			}
-			i++;
-		}
-		for( int j = indexExon ; j< this.getVector().size() ; j ++ ) {
-			
-			result.getVector().add(this.getElement(j));
-		}
-			
-		return result; 	
-	}
-	
-	
-	
-
-	public Region getLeftExon(Region exon) {
-		
-		int i = 0 ; 
-		
-		int indexExon = -1 ; 
-		for(Region r : this.getVector()) {
-			if(r.equals(exon)) {
-				indexExon = i; 
-			}
-			i++;
-		}
-		
-		
-		return this.vector.get(indexExon -1);
-		
-		
-	}
-	
-	
-	public Region getRightExon(Region exon) {
-		
-		HashMap<Integer, Region> map = new HashMap<Integer, Region>();
-		int i = 0 ; 
-		
-		int indexExon = -1 ; 
-		for(Region r : this.getVector()) {
-			if(r.equals(exon)) {
-				indexExon = i; 
-			}
-			i++;
-		}
-		
-		
-		return this.vector.get(indexExon +1 );
-		
-		
-	}
 	public RegionVector() {
 		super();
 		this.vector = new Vector<Region>();
 	}
-
 
 	public RegionVector( Vector<Region> vector) {
 		super();
 		this.vector = vector;
 
 	}
-
 
 	public Region getElement(int i){
 
@@ -124,64 +40,39 @@ public class RegionVector {
 
 	}
 
-	public RegionVector cut2(int a , int b) {
-		RegionVector result = new RegionVector();
-		
-		for(Region r : this.getVector()) {
-			
-			if(r.getStart()< b) {
-			if(r.getStart()>=a && r.getEnd() <= b) {
-				result.getVector().add(r);
-			}
-			//FIRST ONE
-			else if(r.getStart()<=a && r.getEnd()>=a ) {
-//				System.out.println("-----------------------------");
-//				System.out.println(r.getStart()+ " "+r.getEnd());
-//				System.out.println("-----------------------------");
-
-				//first
-				if( r.getEnd() <= b) {
-					result.getVector().add(new Region(a,r.getEnd()));
-				}else {
-					result.getVector().add(new Region(a,b));
-				}
-
-			}
-			else if (r.getStart()>=a  && r.getEnd() >= b) {
-				result.getVector().add(new Region(r.getStart(),b));
-			}
-			}
-		}
-		
-		
-		return result; 
-		
-		
-	}
-	
 	public RegionVector cut(int a , int b) {
 		RegionVector result = new RegionVector();
 		
-		for(Region r : this.getVector()) {
-			if(r.getStart()>=a && r.getEnd() <= b) {
-				result.getVector().add(r);
-			}
-			//FIRST ONE
-			else if(r.getStart()<=a && r.getEnd()>=a ) {
-//				System.out.println("-----------------------------");
-//				System.out.println(r.getStart()+ " "+r.getEnd());
-//				System.out.println("-----------------------------");
-
-				//first
-				if( r.getEnd() <= b) {
-					result.getVector().add(new Region(a,r.getEnd()));
-				}else {
-					result.getVector().add(new Region(a,b));
+		for(Region r : this.getVector()) {			
+			
+			if(r.getStart()<= b) {
+				
+				//Normal exon, which is between a and b but is just passed as it is.
+				if(r.getStart()>=a && r.getEnd() <= b) {
+					result.getVector().add(r);
 				}
+				
+			    //FIRST ONE : contains a between its start and end
+				else if(r.getStart()<=a && r.getEnd()>=a ) {
+					//first
+					if( r.getEnd() <= b) {
+						
+						result.getVector().add(new Region(a,r.getEnd()));
+					}else {
+						//Case where a and b are both inside the same region
+						result.getVector().add(new Region(a,b));
+						//return result;
+					}
 
-			}
-			else if (r.getStart()>=a  && r.getEnd() >= b) {
-				result.getVector().add(new Region(r.getStart(),b));
+				}
+				
+				//LAST ONE
+				else if (r.getStart()>=a  && r.getEnd() >= b) {
+					
+					result.getVector().add(new Region(r.getStart(),b));
+				}
+			
+				
 			}
 		}
 		
@@ -190,30 +81,201 @@ public class RegionVector {
 		
 		
 	}
+
 	
-	public boolean isConsistent(RegionVector rv) {
+	public boolean isConsistentExonSkipping(RegionVector rv, Region exon, boolean exclusive) {
 		//rv is the big one 
+		
+		//System.out.println("CUT "+ Utils.prettyRegionVector(rv.cut(this.getStart(), this.getStop())));
+	    //System.out.println("THIS "+ Utils.prettyRegionVector(this));
+
+		RegionVector first = new RegionVector(this.getVector());
+
+//		System.out.println("RV "+ Utils.prettyRegionVector(first));
+//		System.out.println("EXON" + exon.getStart() + " -"+ exon.getEnd());
+		
+//		if(!first.getVector().contains(exon)) {
+//			//first.getVector().add(exon);
+//			//first.getVector().sort(comparator);
+//		}
+		
+	    RegionVector cut = rv.cut(first.getStart(),first.getStop()); 
+	    //System.out.println("CUT  "+cut);
+	    //cut.getNumberRegion();
+	   // System.out.println("CUT "+ Utils.prettyRegionVector(rv.cut(this.getStart(), this.getStop())));
+	    if(cut.getNumberRegion()==0) {
+	   		return false; 
+	    }
+		if(rv.cut(first.getStart(), first.getStop()).equals(first.merge())) {
+			return true; 
+		}
+		
+
+		return false; 
+	
+	}
+	
+	
+	public static void main(String[] args) {
+
+
+		
+//		Region a = new Region(73024,73125);
+//		Region b = new Region(72571,72579);
+		Region a = new Region(57726,57733);
+		Region b = new Region(57734,57828);
+		
+		Region c = new Region(57694,57739);	
+		Region d = new Region(57740,57778);
+				
+		RegionVector rv1 = new RegionVector();
+		RegionVector rv2 = new RegionVector();
+		rv1.getVector().addElement(a);
+		rv1.getVector().addElement(b);
+		
+		rv2.getVector().addElement(c);
+		rv2.getVector().addElement(d);
+
+		
+		
+		System.out.println(rv1.isConsistent(rv2));
+		
+		System.out.println("Nomal");
+		System.out.println(Utils.prettyRegionVector(rv1));
+		System.out.println(Utils.prettyRegionVector(rv2));
+		Collections.sort(rv1.vector, comparator);
+		System.out.println(Utils.prettyRegionVector(rv1));
+		System.out.println("Merged");
+		System.out.println(Utils.prettyRegionVector(rv1.merge()));
+
+		System.out.println();
+		
+		
+		
+	}
+
+	public boolean isConsistentMod(RegionVector rv) {
+		//rv is the big one 
+		
+		if(this.getNumberRegion()==1 && rv.getNumberRegion()==1) {
+    			return true;
+		}
+		
+		if(this.getStop() <= rv.getStart() || rv.getStop() <= this.getStart()) {
+			return true; 
+		}
+		
+		int start = Integer.max(rv.getStart(), this.getStart());
+		int stop = Integer.min(rv.getStop(), this.getStop());
 		
 		//System.out.println("RV "+ Utils.prettyRegionVector(rv));
 		//System.out.println("CUT "+ Utils.prettyRegionVector(rv.cut(this.getStart(), this.getStop())));
 	    //System.out.println("THIS "+ Utils.prettyRegionVector(this));
 
-	    RegionVector cut = rv.cut(this.getStart(), this.getStop()); 
-	    //System.out.println("CUT  "+cut);
+		RegionVector first = new RegionVector(this.getVector());
+	    RegionVector cut = rv.cut(start,stop); 
+	    RegionVector cut2 = first.cut(start,stop); 
+
+//	    System.out.println("CUT  "+Utils.prettyRegionVector(cut));
+//	    System.out.println("CUT  "+Utils.prettyRegionVector(cut2));
 	    //cut.getNumberRegion();
-	   // System.out.println("CUT "+ Utils.prettyRegionVector(rv.cut(this.getStart(), this.getStop())));
-    if(cut.getNumberRegion()==0) {
-    		//System.out.println("-----------------------------------------");
-   		return false; 
-    }
-		if(rv.cut(this.getStart(), this.getStop()).equals(this.merge())) {
+	   //System.out.println("CUT "+ Utils.prettyRegionVector(rv.cut(start,stop)));
+	    
+	    if(cut.getNumberRegion()==0) {
+	   		return false; 
+	    }
+
+		if(cut.merge().equals(cut2.merge())) {
 			return true; 
 		}
 		
-
-	return false; 
-	
+		return false; 
 	}
+	
+	public boolean isConsistent(RegionVector rv) {
+		//rv is the big one 
+		
+		if(this.getNumberRegion()==1 && rv.getNumberRegion()==1) {
+    			return true;
+		}
+		
+		int start = Integer.max(rv.getStart(), this.getStart());
+		int stop = Integer.min(rv.getStop(), this.getStop());
+		
+		//System.out.println("RV "+ Utils.prettyRegionVector(rv));
+		//System.out.println("CUT "+ Utils.prettyRegionVector(rv.cut(this.getStart(), this.getStop())));
+	    //System.out.println("THIS "+ Utils.prettyRegionVector(this));
+
+		RegionVector first = new RegionVector(this.getVector());
+	    RegionVector cut = rv.cut(first.getStart(),first.getStop()); 
+	    //System.out.println("CUT  "+cut);
+	    //cut.getNumberRegion();
+	   //System.out.println("CUT "+ Utils.prettyRegionVector(rv.cut(start,stop)));
+	    
+	    if(cut.getNumberRegion()==0) {
+	   		return false; 
+	    }
+
+		if(rv.cut(first.getStart(), first.getStop()).equals(first.merge())) {
+			return true; 
+		}
+		
+		return false; 
+	}
+	
+	
+	public boolean isTranscriptomic(RegionVector rv_read) {
+		
+		RegionVector transcript_rv = new RegionVector(this.getVector());
+//		System.out.println("READ");
+//		System.out.println(Utils.prettyRegionVector(rv_read));
+//		System.out.println("TRANSCRIPT");
+//		System.out.println(Utils.prettyRegionVector(transcript_rv));
+//		System.out.println("INVERSED");
+//		System.out.println(Utils.prettyRegionVector(transcript_rv.inverseModified()));
+		
+		for(Region read_region : rv_read.getVector()) {
+			
+			for(Region transcript_intron: transcript_rv.inverseModified().getVector()) {
+				
+				if(read_region.overlapMod(transcript_intron) ) {
+					return false;
+				}	
+			}
+		}
+		return true; 
+	}
+	
+	
+	
+	
+	public boolean isTranscriptomic1(RegionVector rv_read) {
+		
+		//this:
+		RegionVector modifiedRead = new RegionVector();
+		for(Region r : rv_read.getVector()) {
+			modifiedRead.getVector().addElement(new Region(r.getStart()+1, r.getEnd()));
+		}
+		//System.out.println("THIS "+Utils.prettyRegionVector(this.inverse()));
+		for(Region r : modifiedRead.getVector()) {
+			
+			RegionVector intersect = this.inverse().getIntersect(r);
+			if(intersect.getVector().size() > 0  && intersect.getStart()!=intersect.getStop() ) {
+//				System.out.println(this.inverse().getIntersect(r).getVector().get(0).getStart());
+				return false; 
+			}
+		}	
+		
+		return true; 
+	}
+	
+	
+	
+	
+	
+	
+	
+	
 	public RegionVector getIntersect(Region r){
 
 	RegionVector rv = new RegionVector();
@@ -320,6 +382,9 @@ public class RegionVector {
 		   boolean got = false; 
 		   RegionVector rv = (RegionVector ) o;
 		   
+		   if(rv.getVector().size()!= this.getVector().size()) {
+			   return false;
+		   }
 		   int size = rv.getVector().size();
 		   
 		   
@@ -417,11 +482,55 @@ public class RegionVector {
 		Vector<Region> v = this.vector;
 
 		Collections.sort(this.vector, comparator);
+		Vector<Region> merged = new Vector<Region>();
+		int tempStart=0;
+		int tempStop=0;
+		
+		for (Region region : v) {
+
+			//first run, initialization
+			if(tempStart == 0) {
+				tempStart = region.getStart();
+				tempStop = region.getEnd();
+				continue;
+			}
+			// Normal runs
+			else {
+				
+				if(tempStop>= (region.getStart()-1)) {
+					//overlap
+					//Region r = new Region(tempStart, region.getEnd());
+					//merged.add(r);
+					//System.out.println(region.getEnd());
+					if(!(tempStop >= region.getEnd())) {
+						tempStop= region.getEnd();
+					}
+					
+				}
+				else {
+					Region r = new Region(tempStart, tempStop);
+					merged.add(r);
+					tempStart=region.getStart();
+					tempStop=region.getEnd();
+				}
+			}
+		}
+
+		merged.add(new Region(tempStart, tempStop));
+		RegionVector mergedRv = new RegionVector(merged);
+		return mergedRv;
+	}
+
+	public RegionVector mergeSpec() {
+		Vector<Region> v = this.vector;
+
+		Collections.sort(this.vector, comparator);
 		//Utilities.printVector(vector);
 		Vector<Region> merged = new Vector<Region>();
 		int tempStart=0;
 		int tempStop=0;
 
+		
 		for (Region region : v) {
 
 			if(tempStart == 0) {
@@ -451,21 +560,42 @@ public class RegionVector {
 		}
 
 		merged.add(new Region(tempStart, tempStop));
-
 		RegionVector mergedRv = new RegionVector(merged);
 		return mergedRv;
 	}
 
 
-
-
 	static Comparator<Region> comparator = new Comparator<Region>() {
 	    @Override
 	    public int compare(Region left, Region right) {
-	        return left.getStart() - right.getStart(); // use your logic
+	    	
+	    		if(left.getStart() == right.getStart()) {
+	    			return left.getEnd() - right.getEnd();
+	    		}
+	        return left.getStart() - right.getStart(); 
 	    }
 	};
 
+	
+	
+	public boolean overlap(RegionVector rv) {
+		
+		Region one = new Region(this.getStart(), this.getStop());
+		Region two = new Region(rv.getStart(), rv.getStop());
+		
+		if(one.getStart()<=two.getStart() && one.getEnd() >= two.getStart()) {
+			return true;
+		}
+		if(two.getStart()<=one.getStart() && two.getEnd() >= one.getStart()) {
+			return true;
+		}
+		
+		
+		
+		
+		return false; 
+		
+	}
 
 	public RegionVector inverse(boolean verbose){
 
@@ -501,7 +631,38 @@ public class RegionVector {
 		return rv;
 	}
 
+	public RegionVector inverseModified(){
 
+		Vector<Region> reverse = new Vector<Region>();
+
+		Region intron;
+
+		RegionVector merged = this.merge();
+		Collections.sort(vector, comparator);
+
+		int x1= Integer.MAX_VALUE;
+		this.vector.firstElement().getStart();
+
+		for (Region r :this.getVector()) {
+
+
+			int x2 = r.getStart();
+
+			if(x2>x1){
+				//HERE ONLY MOD
+				intron = new Region(x1+1,x2-1);
+				x1= r.getEnd();
+				reverse.add(intron);
+			}else{
+
+				x1= r.getEnd();
+			}
+
+		}
+
+		RegionVector rv = new RegionVector(reverse);
+		return rv;
+	}
 
 	public RegionVector inverse(){
 

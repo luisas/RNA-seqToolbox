@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
 
-import readSimulator.Utils;
-
 import exonSkipping.Annotation;
 import exonSkipping.Gene;
 import exonSkipping.Region;

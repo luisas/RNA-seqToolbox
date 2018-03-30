@@ -13,8 +13,6 @@ import readSimulator.Utils;
 
 public class Utilities {
 
-
-	
 	
 	public static void printRead(SAMRecord read) {
 		RegionVector rv = new RegionVector();
@@ -28,17 +26,11 @@ public class Utilities {
 	public  static StringBuilder prettySetRegionVector(Set<RegionVector> set){
 
 		RegionVector rv1 = new RegionVector();
-
-
-
-
 		for(RegionVector rv : set){
 			for(Region r: rv.getVector() ){
 				if(!rv1.getVector().contains(r)){
 					rv1.getVector().add(r);
 				}
-
-
 			}
 
 		}
